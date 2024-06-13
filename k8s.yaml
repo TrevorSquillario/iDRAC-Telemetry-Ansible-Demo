@@ -36,3 +36,6 @@
       ansible.builtin.import_playbook: kubernetes_sigs.kubespray.cluster
       tags:
         - kubernetes
+
+# .env import
+# https://github.com/kubernetes/kompose/issues/1289

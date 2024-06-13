@@ -123,7 +123,6 @@ func (source *EventSource) Next() (Event, error) {
 	for {
 		readCloser, err := source.ensureReadCloser()
 		if err != nil {
-			log.Printf("EventSource.Next(): ERROR %s\n", err)
 			return Event{}, err
 		}
 
@@ -139,18 +138,7 @@ func (source *EventSource) Next() (Event, error) {
 		}
 
 		if err == io.EOF {
-			log.Printf("EventSource.Next(): EOF received, reestablishing connection\n")
-			for {
-				log.Printf("EventSource.Next(): EOF received, retrying...\n")
-				newReadCloser, err := source.establishConnection()
-				if err != nil {
-					log.Printf("EventSource.Next(): error reestablishing connection %#v, %#v\n", newReadCloser, err)
-					time.Sleep(30 * time.Second)
-					continue
-				} else {
-					break
-				}
-			}
+			return Event{}, err
 		}
 
 		readCloser.Close()

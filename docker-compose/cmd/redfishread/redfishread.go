@@ -118,9 +118,16 @@ func parseAlert(alertEvents *redfish.RedfishPayload, systemid string, hosttags s
 			data.EventType = metricValue.Object["EventType"].(string)
 			if metricValue.Object["EventTimestamp"] == nil {
 				t := time.Now()
-				data.Timestamp = t.Format("2006-01-02T15:04:05-0700")
+				data.Timestamp = t.Format(time.RFC3339)
 			} else {
-				data.Timestamp = metricValue.Object["EventTimestamp"].(string)
+				timestamp, err := time.Parse("2006-01-02T15:04:05-0700", metricValue.Object["EventTimestamp"].(string))
+				// time.RFC1123Z
+				if err != nil {
+					log.Printf("Error parsing timestamp as RFC1123Z for point %s: %v", metricValue.Object["EventTimestamp"].(string), err)
+					continue
+				}    
+				//data.Timestamp = metricValue.Object["EventTimestamp"].(string)
+				data.Timestamp = timestamp.Format(time.RFC3339)
 			}
 			data.System = systemid
 			group.Values = append(group.Values, *data)
@@ -308,8 +315,12 @@ func (r *RedfishDevice) StartAlertEventListener(dataBusService *databus.DataBusS
 			continue
 		}
 		if event.Err != nil { // SSE connect failure , retry connection
-			log.Printf("SSE connection failure for alert event %#v\n", event.Err)
-			if event.Err.Error() != "EOF" { // EOF after an hr of inactivity, restart now
+			log.Printf("%s: Got SSE error %s\n", r.SystemID, event.Err)
+			if strings.Contains(event.Err.Error(), "connection error") {
+				// Wait for 5 minutes before restarting, so that the iDRAC can be rebooted
+				// and SSE connection can be re-established
+
+				log.Printf("Sleep 5 minutes before restarting SSE connection for %s\n", r.SystemID)
 				time.Sleep(time.Minute * 5)
 			}
 			r.RestartAlertEventListener()
@@ -347,7 +358,12 @@ func (r *RedfishDevice) StartMetricReportEventListener(dataBusService *databus.D
 			continue
 		}
 		if event.Err != nil { // SSE connect failure , retry connection
-			if event.Err.Error() != "EOF" { // EOF after an hr of inactivity, restart now
+			log.Printf("%s: Got SSE error %s\n", r.SystemID, event.Err)
+			if strings.Contains(event.Err.Error(), "connection error") {
+				// Wait for 5 minutes before restarting, so that the iDRAC can be rebooted
+				// and SSE connection can be re-established
+
+				log.Printf("Sleep 5 minutes before restarting SSE connection for %s\n", r.SystemID)
 				time.Sleep(time.Minute * 5)
 			}
 			r.RestartMetricReportEventListener()

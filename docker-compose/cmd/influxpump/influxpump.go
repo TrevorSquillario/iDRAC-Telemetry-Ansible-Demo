@@ -34,13 +34,7 @@ func handleGroups(writeAPI api.WriteAPI, groupsChan chan *databus.DataGroup) {
 			//fmt.Printf("Value: %#v\n", value)
 			if err != nil {
 				log.Printf("Error parsing timestamp as RFC3339 for point %s: (%s) %v", value.Context+"_"+value.ID, value.Timestamp, err)
-				//continue
-				timestamp, err = time.Parse("2006-01-02T15:04:05-0700", value.Timestamp)
-				// time.RFC1123Z
-				if err != nil {
-					log.Printf("Error parsing timestamp as RFC1123Z for point %s: (%s) %v", value.Context+"_"+value.ID, value.Timestamp, err)
-					continue
-				}    
+				continue
 			}
 
 			//log.Printf("DEBUG: WritePoint group %#v\n", group)
@@ -99,6 +93,7 @@ func handleGroups(writeAPI api.WriteAPI, groupsChan chan *databus.DataGroup) {
 					AddField("MessageId", value.MessageId).
 					AddField("Message", value.Message).
 					SetTime(timestamp)
+				log.Printf("DEBUG: WritePoint value %#v\n", r)
 				// automatically batches things behind the scenes
 				writeAPI.WritePoint(r)
 			}
