@@ -1,0 +1,5 @@
+common_packages:
+    - wget
+    - libselinux-python
+    - redhat-lsb-core
+    - epel-release

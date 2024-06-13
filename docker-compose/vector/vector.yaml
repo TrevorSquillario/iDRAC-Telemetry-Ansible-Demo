@@ -1,0 +1,57 @@
+###
+# Not a great solution
+# 1. Can't map timestamp for each metric reading
+# 2. Hostname not included in MetricReport
+###
+
+
+api:
+  enabled: true
+  address: 0.0.0.0:8686
+sources:
+  metric_http_server:
+    type: http_server
+    address: "0.0.0.0:8001"
+    decoding:
+      codec: json
+    method: POST
+    tls:
+      verify_certificate: false
+transforms:
+  metric_http_server_transform:
+    type: remap
+    inputs:
+      - metric_http_server
+    source: >-
+      metrics = []
+      for_each(array!(.MetricValues)) -> |key, value| {
+        #metric, err = set(., [key], value.MetricValue)
+        metrics = push(metrics, value.MetricValue)
+      }
+
+      del(."@odata.type")
+      del(."@odata.context")
+      del(."@odata.id")
+      del(.MetricValues)
+
+      .metrics = metrics
+sinks:
+  console:
+    inputs:
+      - metric_http_server
+    target: stdout
+    type: console
+    encoding:
+      codec: json
+  influx:
+    type: influxdb_metrics
+    inputs:
+      - metric_http_server_transform
+    bucket: my-org-bucket
+    consistency: any
+    database: test
+    endpoint: http://localhost:8086/
+    org: my-org
+    tags:
+      source: vector
+    token: 

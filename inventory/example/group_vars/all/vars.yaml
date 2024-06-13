@@ -1,0 +1,2 @@
+share_name: host:/nfs/path
+image: Rocky-9.2-x86_64-dvd.iso

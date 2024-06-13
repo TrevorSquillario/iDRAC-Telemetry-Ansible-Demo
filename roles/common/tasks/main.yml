@@ -1,0 +1,30 @@
+---
+- name: Include OS Specific Variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version}}.yml"
+    - "{{ ansible_distribution }}.yml"
+  tags: vars
+
+- name: Install Common Packages
+  package: name={{ item }} state=installed
+  with_items: 
+    - "{{ common_packages }}"
+  ignore_errors: true
+
+- name: Copy Common Config Files
+  copy:
+    src="{{ item.src }}"
+    dest="{{ item.dest }}"
+    owner=root
+    group=root
+    mode="{{ item.mode }}"
+    backup=yes
+  with_items:
+    - { src: 'hgrep.sh', dest: '/etc/profile.d', mode: '0755' }
+    - { src: 'history.sh', dest: '/etc/profile.d', mode: '0755' }
+    - { src: 'inputrc', dest: '/etc', mode: '0644' }
+    - { src: 'gitconfig', dest: '/etc/gitconfig', mode: '0644' }
+
+- name: Update facts for host
+  action: setup

@@ -1,0 +1,50 @@
+---
+- hosts: all
+  connection: local
+  name: Boot to Network ISO
+  gather_facts: False
+  vars_files:
+    - vault.yaml
+  vars:
+    iso_share_name: "{{ share_name }}"
+    iso_image: Rocky-9-2-x86_64-dvd_unattended.iso
+    iso_expose_duration: 10
+    power_state: "On"
+  tasks:
+    - name: Insert Virtual Media
+      dellemc.openmanage.idrac_virtual_media:
+        idrac_ip: "{{ oob_host }}"
+        idrac_user: "{{ vault_oob_username }}"
+        idrac_password: "{{ vault_oob_password }}"
+        validate_certs: False
+        virtual_media:
+        - index: 1
+          insert: true
+          image: "{{ iso_share_name }}/{{ iso_image }}"
+
+    - name: Configure the boot source override mode.
+      dellemc.openmanage.idrac_boot:
+        idrac_ip: "{{ oob_host }}"
+        idrac_user: "{{ vault_oob_username }}"
+        idrac_password: "{{ vault_oob_password }}"
+        boot_source_override_target: cd
+        boot_source_override_enabled: once
+        reset_type: force_restart
+        validate_certs: False
+
+    - name: Wait for install to finish
+      ansible.builtin.pause:
+        minutes: 30
+
+    # TODO: If we know the IP beforehand we would setup an async poll on that to determine if the OS installed successfully
+
+    - name: Eject Virtual Media
+      dellemc.openmanage.idrac_virtual_media:
+        idrac_ip: "{{ oob_host }}"
+        idrac_user: "{{ vault_oob_username }}"
+        idrac_password: "{{ vault_oob_password }}"
+        validate_certs: False
+        virtual_media:
+          - insert: false
+      tags:
+        - eject

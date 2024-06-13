@@ -1,0 +1,11 @@
+---
+- hosts: k8s
+  name: Setup uOS
+  become: yes
+  vars_files:
+  - vault.yaml
+  roles:
+    - role: nvidia.nvidia_driver
+      vars:
+        nvidia_driver_branch: latest
+      tags: [ 'nvidia' ]

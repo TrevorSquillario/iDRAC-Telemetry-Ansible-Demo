@@ -1,0 +1,8 @@
+[ansible]
+localhost ansible_connection=local # ansible_python_interpreter="~/.venv/telemetry/bin/python3" Uncomment if your using a Python Virtual Environment
+
+[idrac]
+web-server-01 oob_host=idrac-web-server-01
+
+[dc1:children]
+idrac

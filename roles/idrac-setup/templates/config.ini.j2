@@ -1,0 +1,21 @@
+[General]
+StompHost="{{ stomphost }}"
+StompPort="{{ stompport }}"
+
+{% set ips = [] %}
+{% set types = [] %}
+{% for host in vars['play_hosts'] %}
+{{ ips.append(hostvars[host]['oob_host']) }}
+{{ types.append('iDRAC') }}
+{% endfor %}
+
+[Services]
+Types={{ types | join(',') }}
+IPs={{ ips | join(',') }}
+
+{% for host in vars['play_hosts'] %}
+[{{ hostvars[host]['oob_host'] }}]
+username="{{ vault_oob_username }}"
+password="{{ vault_oob_password }}"
+host-tags="{{ hostvars[host]['group_names'] | join(',') }}"
+{% endfor %} 

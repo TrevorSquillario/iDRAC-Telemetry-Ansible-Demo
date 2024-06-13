@@ -1,0 +1,9 @@
+---
+# tasks file for telemetry-demo
+
+- name: Generate docker-compose.yaml file
+  template: 
+    dest: "{{ docker_compose_file }}"
+    src: docker-compose.yaml.j2
+  tags:
+    - generate-docker-compose

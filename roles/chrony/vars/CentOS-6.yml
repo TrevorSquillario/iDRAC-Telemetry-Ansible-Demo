@@ -1,0 +1,4 @@
+timezone_commands:
+    - "echo 'ZONE=\"America/Denver\"' > /etc/sysconfig/clock"
+    - "rm -rf /etc/localtime"
+    - "ln -s /usr/share/zoneinfo/America/Denver /etc/localtime"

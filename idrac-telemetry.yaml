@@ -1,0 +1,103 @@
+---
+- hosts: idrac
+  connection: local
+  name: Configure Telemetry
+  gather_facts: False
+  become: no
+  vars:
+    idrac_attributes: 
+      Telemetry.1.EnableTelemetry: "Enabled"
+      TelemetryCPUSensor.1.EnableTelemetry: "Enabled"
+      TelemetryFanSensor.1.EnableTelemetry: "Enabled"
+      TelemetryMemoryMetrics.1.EnableTelemetry: "Enabled"
+      TelemetryMemorySensor.1.EnableTelemetry: "Enabled"
+      TelemetryNICSensor.1.EnableTelemetry: "Enabled"
+      TelemetryNICStatistics.1.EnableTelemetry: "Enabled"
+      TelemetryPowerMetrics.1.EnableTelemetry: "Enabled"
+      TelemetryPSUMetrics.1.EnableTelemetry: "Enabled"
+      TelemetrySensor.1.EnableTelemetry: "Enabled"
+      TelemetrySFPTransceiver.1.EnableTelemetry: "Enabled"
+      TelemetryStorageDiskSMARTData.1.EnableTelemetry: "Enabled"
+      TelemetryStorageSensor.1.EnableTelemetry: "Enabled"
+      TelemetrySystemUsage.1.EnableTelemetry: "Enabled"
+      TelemetryThermalMetrics.1.EnableTelemetry: "Enabled"
+      TelemetryThermalSensor.1.EnableTelemetry: "Enabled"
+      NTPConfigGroup.1.NTPEnable: "Enabled"
+      NTPConfigGroup.1.NTP1: "time-a-g.nist.gov"
+      Time.1.Timezone: "US/Central"
+  vars_files:
+    - vault.yml
+  tasks:
+  - name: Set iDRAC Attributes
+    community.general.idrac_redfish_config:
+      baseuri: "{{ oob_host }}"
+      username: "{{ vault_oob_username }}"
+      password: "{{ vault_oob_password }}"
+      category: Manager
+      command: SetManagerAttributes
+      manager_attributes: "{{ idrac_attributes }}" 
+    ignore_errors: True
+    tags:
+      - telemetry
+
+  - name: Import Server Configuration Profile
+    dellemc.openmanage.idrac_server_config_profile:
+      idrac_ip: "{{ oob_host }}"
+      idrac_user: "{{ vault_oob_username }}"
+      idrac_password: "{{ vault_oob_password }}"
+      share_name: "{{ playbook_dir }}"
+      command: "import" # import, export
+      scp_file: "iDRACEventFiltersRedfish.json"
+      scp_components: "ALL" # ALL, IDRAC, BIOS, NIC, RAID
+      shutdown_type: "Graceful" # Graceful, Forced, NoReboot
+      job_wait: True
+      validate_certs: False
+    tags:
+      - telemetry
+
+  - debug:
+      var: group_names
+    tags:
+      - ini
+      - debug
+
+  - debug:
+      var: play_hosts
+    tags:
+      - ini
+      - debug
+
+  - name: Write config.ini file for iDRAC Telemetry Reference Tools
+    template: 
+      dest: ../config.ini 
+      src: config.ini.j2
+    tags:
+      - ini
+
+- hosts: localhost
+  connection: local
+  name: Configure Docker Setup
+  gather_facts: False
+  become: no
+  vars_files:
+    - vault.yml
+  tasks:
+
+  #- name: Start 
+  #  community.docker.docker_compose_v2:
+  #    project_src: flask
+  #    state: absent
+
+  - name: Restart containers
+    community.docker.docker_container:
+      name: "{{ item }}"
+      image: "{{ item }}:latest"
+      state: started
+      restart: true
+    loop:
+     - simpledisc
+     - simpleauth
+     - redfishread
+     - influxpump
+    tags:
+      - ini

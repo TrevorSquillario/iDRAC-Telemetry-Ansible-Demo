@@ -1,0 +1,30 @@
+---
+# vars file for telemetry-demo
+# Telemetry Vars
+MESSAGEBUS_HOST: activemq
+MESSAGEBUS_PORT: 61613
+USER_ID: 1001
+GROUP_ID: 1001
+USERNAME: telemetry
+GROUPNAME: telemetry
+INFLUXDB_DB: poweredge_telemetry_metrics
+INFLUXDB_USER: "{{ USERNAME }}"
+INFLUXDB_URL: http://influx:8086
+INFLUXDB_CONFIG_URL: http://localhost:8086
+INFLUX_ORG: my-org
+INFLUX_HOST: influx
+INFLUX_BUCKET: my-org-bucket
+INFLUX_OR_PROMETHEUS: influx_setup_finish
+DOCKER_INFLUXDB_INIT_MODE: setup
+DOCKER_INFLUXDB_INIT_USERNAME: admin
+INFLUXDB_HTTP_AUTH_ENABLED: 1
+DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "{{ vault_docker_influxdb_init_admin_token }}"
+DOCKER_INFLUXDB_INIT_PASSWORD: "{{ vault_docker_influxdb_init_password }}"
+CHK_INFLUX_PROMETHEUS: influx_setup_finish
+GRAFANA_URL: http://localhost
+GRAFANA_ADMIN_USER: admin
+GRAFANA_ADMIN_PASSWORD: admin
+GRAFANA_DATASOURCE_UID: ddn8c4swkqo00f
+GRAFANA_SMTP_ENABLED: true
+GRAFANA_SMTP_HOST: mail.delllabs.net:25
+GRAFANA_SMTP_FROM_ADDRESS: noreply@Dell.com

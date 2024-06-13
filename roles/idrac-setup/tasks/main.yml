@@ -1,0 +1,56 @@
+---
+# tasks file for idrac-setup
+###
+# Generate config.ini
+###
+- debug:
+    var: play_hosts
+  tags:
+    - ini
+    - debug
+  run_once: true
+
+- name: Write config.ini file for iDRAC Telemetry Reference Tools
+  template: 
+    dest: "{{ playbook_dir }}/docker-compose/config.ini"
+    src: config.ini.j2
+  tags:
+    - ini
+  run_once: true
+
+### 
+# iDRAC Telemetry Setup
+###
+
+- name: Set iDRAC Attributes
+  community.general.idrac_redfish_config:
+    baseuri: "{{ oob_host }}"
+    username: "{{ vault_oob_username }}"
+    password: "{{ vault_oob_password }}"
+    category: Manager
+    command: SetManagerAttributes
+    manager_attributes: "{{ idrac_attributes }}" 
+  ignore_errors: True
+  tags:
+    - telemetry
+
+##
+#  - .json file contains the Event Filter attributes to enable the Redfish Event destination for pertinent categories
+#  - Easiest way to customize this is to configure them in the iDRAC 
+#    - iDRAC Settings > System Settings > Alert Configuration > Alerts > Quick Alert Configuration
+#    - Then export the System Configuration Profile (SCP) to .xml or .json. This will work with both.
+##
+- name: Enable Event Filter Alert Categories for Redfish Destination
+  dellemc.openmanage.idrac_server_config_profile:
+    idrac_ip: "{{ oob_host }}"
+    idrac_user: "{{ vault_oob_username }}"
+    idrac_password: "{{ vault_oob_password }}"
+    share_name: "{{ playbook_dir }}"
+    command: "import" # import, export
+    scp_file: "iDRACEventFiltersRedfish.json"
+    scp_components: "ALL" # ALL, IDRAC, BIOS, NIC, RAID
+    shutdown_type: "Graceful" # Graceful, Forced, NoReboot
+    job_wait: True
+    validate_certs: False
+  tags:
+    - telemetry

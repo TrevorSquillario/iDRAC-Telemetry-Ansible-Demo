@@ -1,0 +1,37 @@
+---
+- name: Include OS Specific Variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version}}.yml"
+    - "{{ ansible_distribution }}.yml"
+  tags: vars
+
+- name: Install Chrony
+  package: name=chrony state=installed
+
+- name: Copy Config Files
+  copy:
+    src="{{ item.src }}"
+    dest="{{ item.dest }}"
+    owner=root
+    group=root
+    mode=0744
+  with_items:
+    - { src: 'chrony.conf', dest: '/etc/chrony.conf' }
+  notify:
+    - restart chrony
+
+- name: Set Timezone
+  shell: "{{ item }}"
+  with_items:
+    - "{{ timezone_commands }}"
+  ignore_errors: yes
+
+- name: Start Chrony
+  service: name="chronyd" state=started enabled=yes
+
+- name: Clock Status
+  shell: "chronyc sources"
+  register: result_chrony
+
+- debug: var=result_chrony.stdout

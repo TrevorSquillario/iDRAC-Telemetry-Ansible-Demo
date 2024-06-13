@@ -1,0 +1,31 @@
+- hosts: idrac
+  connection: local
+  name: iDRAC Configure Telemetry
+  gather_facts: False
+  vars_files:
+    - vault.yaml
+  roles:
+    - role: idrac-setup
+      vars:
+      tags: 
+        - idrac-setup
+  
+- hosts: localhost
+  connection: local
+  name: Start Docker Compose
+  gather_facts: False
+  become: no
+  vars_files:
+  - vault.yaml
+  tasks:
+    - name: Restart containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        image: "{{ item }}:latest"
+        state: started
+        restart: true
+      loop:
+      - simpledisc
+      - simpleauth
+      - redfishread
+      - influxpump

@@ -1,0 +1,272 @@
+x-env-messagebus: &messagebus-env
+  MESSAGEBUS_HOST: "{{ MESSAGEBUS_HOST }}"
+  MESSAGEBUS_PORT: "{{ MESSAGEBUS_PORT }}"
+#  MESSAGEBUS_HOST: kafka
+#  MESSAGEBUS_PORT: 9092
+
+x-arg-base: &base-args
+  USER_ID: {{ USER_ID }}
+  GROUP_ID: {{ GROUP_ID }}
+  USERNAME: "{{ USERNAME }}"
+  GROUPNAME: "{{ GROUPNAME }}"
+
+x-build-base: &base-build
+    context: .
+    dockerfile: Dockerfile
+    args:
+      <<: *base-args
+
+x-refdaemon: &refdaemon
+  user: telemetry:telemetry
+  build:
+    <<: *base-build
+  environment:
+    <<: *messagebus-env
+  depends_on:
+    - activemq
+  networks:
+    - idrac-telemetry-network
+
+x-env-influx: &influx-env
+  INFLUXDB_DB: "{{ INFLUXDB_DB }}"
+  INFLUXDB_URL: "{{ INFLUXDB_URL }}"
+  INFLUX_ORG: "{{ INFLUX_ORG }}"
+  INFLUX_HOST: "{{ INFLUX_HOST }}"
+  INFLUX_BUCKET: "{{ INFLUX_BUCKET }}"
+  INFLUX_OR_PROMETHEUS: "{{ INFLUX_OR_PROMETHEUS }}"
+
+x-env-influx-setup: &influx-setup-env
+  node.name: "{{ INFLUX_HOST }}"
+  DOCKER_INFLUXDB_INIT_MODE: "{{ DOCKER_INFLUXDB_INIT_MODE }}"
+  DOCKER_INFLUXDB_INIT_USERNAME: "{{ DOCKER_INFLUXDB_INIT_USERNAME }}"
+  DOCKER_INFLUXDB_INIT_ORG: "{{ INFLUX_ORG }}"
+  DOCKER_INFLUXDB_INIT_BUCKET: "{{ INFLUX_BUCKET }}"
+  INFLUXDB_HTTP_AUTH_ENABLED: "{{ INFLUXDB_HTTP_AUTH_ENABLED }}"
+  DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "{{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+  DOCKER_INFLUXDB_INIT_PASSWORD: "{{ DOCKER_INFLUXDB_INIT_PASSWORD }}"
+  CHK_INFLUX_PROMETHEUS: "{{ CHK_INFLUX_PROMETHEUS }}"
+
+x-env-grafana: &grafana-env
+  GRAFANA_URL: "{{ GRAFANA_URL }}"
+
+networks:
+  idrac-telemetry-network:
+    driver: bridge
+
+volumes:
+  influxdb-storage:
+  grafana-storage:
+  ml-storage:
+  kapacitor-storage:
+  dashboards:
+
+services:
+  activemq:
+    container_name: activemq
+    image: rmohr/activemq:latest
+    networks:
+      - idrac-telemetry-network
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "8161:8161"
+      - "61613:61613"
+
+  redfishread:
+    <<: *refdaemon
+    container_name: redfishread
+    image: redfishread:latest
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: redfishread
+    depends_on:
+      - activemq
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1G"
+        max-file: "10"
+
+  influx:
+    ############################################################################
+    # INFLUX - start an influx db backend. for testing mostly
+    #
+    # Add this to your docker-compose cli args:
+    #   --profile influx-test-db
+    #
+    # Starting the 'influx-test-db' profile will automatically start:
+    #   - influx pump
+    #   - influx test database
+    #   - grafana dashboard
+    #
+    ############################################################################
+    #
+    #  From influx docs:
+    #  "The InfluxDB image supports running arbitrary initialization scripts
+    #  after initial system setup, on both the setup and upgrade paths. Scripts
+    #  must have extension .sh and be mounted inside of the
+    #  /docker-entrypoint-initdb.d directory. When multiple scripts are
+    #  present, they will be executed in lexical sort order by name."
+    #
+    container_name: influx
+    image: influxdb:latest
+    volumes:
+      #- influxdb-storage:/var/lib/influxdb
+      - influxdb-storage:/var/lib/influxdb2
+    environment:
+      <<: [*influx-env, *influx-setup-env]
+    networks:
+      - idrac-telemetry-network
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: curl http://localhost:8086 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  influx-pump-standalone: &influx-pump
+    ############################################################################
+    # INFLUX PUMP - starts the data pump for influx
+    #    This is automatically started with the influx-test-db
+    #    Manually start this profile if you want to point to an external server
+    #
+    # Add this to your docker-compose cli args:
+    #   --profile influx-pump
+    #
+    # If you want to connect to an external influx database, set the following
+    # environment variables:
+    #
+    #  INFLUXDB_DB: <name-of-influx-database>
+    #  INFLUXDB_URL: http://influxdb:8086
+    #
+    ############################################################################
+    <<: *refdaemon
+    container_name: influxpump
+    image: influxpump:latest
+    restart: always
+    depends_on:
+      - activemq
+    environment:
+      <<: [*messagebus-env]
+      INFLUXDB_URL: ${INFLUXDB_URL}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INFLUX_ORG: ${INFLUX_ORG}
+      INFLUX_BUCKET: ${INFLUX_BUCKET}
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: influxpump
+
+{% if enable_ml_pump %}
+  ml: 
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    container_name: ml
+    image: ml:latest
+    restart: always
+    volumes:
+      - ml-storage:/data
+      - ./ml/ml.py:/opt/app-root/src/ml.py
+    environment:
+      INFLUXDB_URL: ${INFLUXDB_URL}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INFLUX_ORG: ${INFLUX_ORG}
+      INFLUX_BUCKET: ${INFLUX_BUCKET}
+      WATCHFILES_FORCE_POLLING: true
+    ports:
+      - "8000:80"
+    networks:
+      - idrac-telemetry-network
+
+  ml-pump: &influx-pump
+    <<: *refdaemon
+    container_name: mlpump
+    image: mlpump:latest
+    restart: always
+    depends_on:
+      - activemq
+    environment:
+      <<: [*messagebus-env]
+      INFLUXDB_URL: ${INFLUXDB_URL}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INFLUX_ORG: ${INFLUX_ORG}
+      INFLUX_BUCKET: ${INFLUX_BUCKET}
+      METRIC_LABELS: "SystemUsage CPUUsage"
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: mlpump
+{% endif %}
+
+  grafana:
+    ############################################################################
+    # GRAFANA - graphical dashboard for timeseries
+    #    This is automatically started with the influx-test-db
+    #    Manually start this if you want to point a grafana dashboard at an
+    #      external server
+    #
+    # Add this to your docker-compose cli args:
+    #   --profile grafana
+    #
+    # If you want to connect to an external influx database, set the following
+    # environment variables:
+    #
+    #  INFLUXDB_DB: <name-of-influx-database>
+    #  INFLUXDB_URL: http://influxdb:8086
+    #
+    ############################################################################
+
+    # grafana runs as root in latest version. *sigh*
+    # Polystat plugin install doesnt work with prior versions of Grafana. Grafana 9.0.1 is just released on 2022-06-21
+    container_name: grafana
+    #image: grafana/grafana:9.0.1
+    image: grafana/grafana:latest
+    volumes:
+      - ./resolv.conf:/etc/resolv.conf
+      - grafana-storage:/var/lib/grafana
+      - ./:/var/lib/grafana/grafana-polystat-panel
+    depends_on:
+      - influx
+    environment:
+      <<: [*influx-env, *grafana-env]
+      GF_INSTALL_PLUGINS: grafana-polystat-panel
+      GF_SMTP_ENABLED: ${GRAFANA_SMTP_ENABLED}
+      GF_SMTP_HOST: ${GRAFANA_SMTP_HOST}
+      GF_SMTP_FROM_ADDRESS: ${GRAFANA_SMTP_FROM_ADDRESS}
+    ports:
+      #- "3000:3000"
+      - "80:3000"
+    networks:
+      - idrac-telemetry-network
+
+  simpleauth:
+    <<: *refdaemon
+    container_name: simpleauth
+    image: simpleauth:latest
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: simpleauth
+    volumes:
+      - ./config.ini:/app/config.ini
+
+  simpledisc:
+    <<: *refdaemon
+    container_name: simpledisc
+    image: simpledisc:latest
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: simpledisc
+    volumes:
+      - ./config.ini:/app/config.ini

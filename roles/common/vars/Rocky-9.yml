@@ -1,0 +1,5 @@
+common_packages:
+    - wget
+    - python3-policycoreutils 
+    - python3-libselinux
+    - epel-release

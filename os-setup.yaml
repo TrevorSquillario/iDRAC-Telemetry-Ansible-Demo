@@ -1,0 +1,11 @@
+---
+- hosts: all
+  name: Setup uOS
+  become: yes
+  vars_files:
+  - vault.yaml
+  roles:
+    - { role: common, tags: [ 'common' ] }
+    - { role: sudo, tags: [ 'sudo' ] }
+    - { role: chrony, tags: [ 'chrony' ] }
+    - { role: user, tags: [ 'user' ] }

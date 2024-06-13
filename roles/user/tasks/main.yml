@@ -1,0 +1,29 @@
+---
+
+- name: Set Local User Passwords
+  user: 
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    state: "{{ item.state }}"
+  with_items: "{{ users_local }}"
+  when: item.state == "present" and item.password != "" 
+  ignore_errors: true
+
+- name: Add User to wheel Group
+  user:
+    name: "{{ item.name }}"
+    groups: wheel
+    append: yes
+  with_items: "{{ users_local }}"
+  when: item.state == "present" and item.password != "" and item.admin
+  ignore_errors: true
+
+- name: Set SSH Keys
+  authorized_key: 
+    user: "{{ item.name }}"
+    #key: "{{ lookup('file', item.name + '.pub') }}"
+    key: "{{ item.sshpubkey }}"
+    state: present
+  with_items: "{{ users_local }}"
+  when: item.state == "present" and item.sshkey == true
+  ignore_errors: true

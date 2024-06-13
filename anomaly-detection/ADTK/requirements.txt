@@ -1,0 +1,4 @@
+adtk
+pandas==1.5.3
+scikit-learn
+influxdb-client[ciso]

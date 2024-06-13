@@ -1,0 +1,5 @@
+pandas
+influxdb-client[ciso]
+pydantic 
+fastapi 
+prophet  

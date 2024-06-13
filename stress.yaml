@@ -1,0 +1,13 @@
+---
+- hosts: all
+  name: Install and Run stress-ng
+  become: yes
+  vars_files:
+  - vault.yaml
+  tasks:
+  - name: Install stress-ng
+    ansible.builtin.package:
+      name: stress-ng
+      state: present
+  - name: Run stress-ng
+    shell: stress-ng --cpu 128 --timeout 300 --metrics-brief

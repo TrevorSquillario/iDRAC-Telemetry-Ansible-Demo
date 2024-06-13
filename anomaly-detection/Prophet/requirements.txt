@@ -1,0 +1,4 @@
+fbprophet 
+pandas==1.5.3
+influxdb-client[ciso]
+plotly

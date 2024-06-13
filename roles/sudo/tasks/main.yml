@@ -1,0 +1,39 @@
+###
+# Manage sudoers Files
+###
+
+- name: Copy ansible sudoers file
+  template:
+    src: "ansible.j2"
+    dest: "/etc/sudoers.d/ansible"
+    owner: root
+    group: root
+    mode: 0440
+
+- name: Ensure includedir sudoers.d
+  lineinfile:
+    state: present
+    dest: /etc/sudoers
+    regexp: "^#includedir /etc/sudoers.d.*"
+    line: "#includedir /etc/sudoers.d" 
+
+- debug: var=sudoers_files
+
+#- name: Copy sudoers.d files
+#  copy:
+#    src: "{{ item }}"
+#    dest: /etc/sudoers.d
+#    owner: root
+#    group: root
+#    mode: 0440
+#    validate: /usr/sbin/visudo -cf %s # Check to ensure file we have a valid sudoers file
+#  with_items: "{{ sudoers_files }}"
+
+#- name: Copy default /etc/sudoers file
+#  template:
+#    src: "default.j2"
+#    dest: /etc/sudoers
+#    owner: root
+#    group: root
+#    mode: 0440
+#    validate: /usr/sbin/visudo -cf %s # Check to ensure file we have a valid sudoers file
