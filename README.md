@@ -1,6 +1,10 @@
 # iDRAC-Telemetry-Ansible-Demo
 
 ## Getting Started
+This project is based on the [iDRAC-Telemetry-Reference-Tools](https://github.com/dell/iDRAC-Telemetry-Reference-Tools). It adds `HostName` and `HostTags` to the Redfish Telemetry data as well as adding an `mlpump` to facilitate testing with Machine Learning. We are using `Ansible` to build the `docker-compose.yaml` file, create necessary environment variables stored in the `.env` file, configure servers with necessary Telemetry attributes, write the `config.ini` and start the docker compose environment. See [Process Flow](#process-flow) for a more detailed description.
+
+This project is not intended to be used directly in a production environment. It is an attempt at providing an quick start demo environment. As such only `InfluxDB` and `Grafana` are used. Other pumps can be added relatively easily. 
+
 1. Setup Python Virtual Environment (optional but recommended)
 ```
 pip install virtualenv
@@ -80,13 +84,12 @@ ansible-playbook -i inventory/example install.yaml -vvv
 The `install.yaml` file includes 3 roles:
 - `docker-compose-generate`
     - Generates the `docker-compose/docker-compose.yaml` file based on variables provided in `install.vars.yaml`
-    - Generates the `docker-compose/.env` file which is used by docker compose to configure the containers
 - `idrac-setup`
-    - Configures each iDRAC in the `idrac` host group to enable Telemetry globally and enable some Metric Reports for testing. 
+    - Configures each iDRAC in the `idrac` host group to enable Telemetry globally, enable some Metric Reports for testing and optionally set their collection and reporting intervals. 
     - Configures NTP on each iDRAC so the time is all in sync. 
 - `docker-compose-start`
     - Runs `docker compose up` to start containers
-    - Sets up InfluxDB instance with user and permissions for the `influxpump`
+    - Sets up InfluxDB instance with `telemetry` user and permissions for the `influxpump`
     - Configures Grafana instance
     - Restarts container instances to pickup new environment variables
 
@@ -100,6 +103,28 @@ A `docker-compose.yaml` file will be generated under the `docker-compose` folder
 cd docker-compose
 kompose convert -f docker-compose.yaml -o k8s
 ```
+
+## Process Flow
+
+This application utilizes a microservices architecture with messages passing through the ActiveMQ message broker. Go Channels are used to publish and subscribe to events in various message buses. 
+
+### Overview
+- The `simpledisc` service reads the `config.ini` file and sends a message for each server to the `disc` Go Channel
+- The `simpleauth` service listens on the `disc` Channel and attempts to authenticate to the iDRAC with the credentials provided in `config.ini`. If auth is successful a message is sent on the `auth` Channel.
+- The `redfishread` service listens on the `auth` Channel and starts an SSE session with each iDRAC for `Alert`, `MetricReport` and `RedfishLCE` events. Events are sent to the `databus`.
+- The `influxpump` service listens on the `databus` Channel, reformats the Event into an InfluxDB Point and writes it to the database.
+
+### Container Description
+
+- activemq: Message bus used to pass messages between microservices and ensure concurrency
+- grafana: Graphing and visualization
+- influx: Time series database used to store data
+- influxpump: Read from the bus and send points to `influx`
+- ml: FastAPI REST server listening for POST data containing MetricReadings (Experimental)
+- mlpump: Read from the bus and sent data to `ml` (Experimental)
+- redfishread: Establish SSE connection to iDRAC, listen for Redfish Events and post them to the bus
+- simpleauth: Handles iDRAC authentication
+- simpledisc: Read `config.ini` file and send new devices to bus to be processed by `simpleauth`
 
 ## Troubleshooting
 
