@@ -1,6 +1,20 @@
 ---
+- hosts: localhost
+  connection: local
+  name: Generate Docker Compose
+  gather_facts: False
+  become: no
+  vars_files:
+  - vault.yaml
+  - install.vars.yaml
+  tasks:
+    - name: Run kompose to Generate Kubernetes Config
+      shell: kompose convert -f docker-compose.yaml -o k8s
+      tags: 
+        - kompose
+
 - hosts: k8s
-  name: Setup uOS
+  name: Install Nvidia Driver
   become: yes
   vars_files:
   - vault.yaml
@@ -8,4 +22,17 @@
     - role: nvidia.nvidia_driver
       vars:
         nvidia_driver_branch: latest
-      tags: [ 'nvidia' ]
+      tags:
+        - nvidia
+
+- hosts: k8s
+  name: Install Kubernetes
+  become: yes
+  become_user: root
+  vars_files:
+  - vault.yaml
+  tasks:
+    - name: Install Kubernetes
+      ansible.builtin.import_playbook: kubernetes_sigs.kubespray.cluster
+      tags:
+        - kubernetes

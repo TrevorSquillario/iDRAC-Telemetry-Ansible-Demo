@@ -92,6 +92,15 @@ The `install.yaml` file includes 3 roles:
 
 ### Your grafana instance should now be available at http://ip running on port `80` with username `admin` and password `admin`
 
+# Docker
+A `docker-compose.yaml` file will be generated under the `docker-compose` folder. You can use that to manage your enviroment as well.
+
+# Kubernetes
+```
+cd docker-compose
+kompose convert -f docker-compose.yaml -o k8s
+```
+
 ## Troubleshooting
 
 ### Reset
