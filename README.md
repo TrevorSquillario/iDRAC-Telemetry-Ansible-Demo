@@ -95,7 +95,7 @@ The `install.yaml` file includes 3 roles:
 # Docker
 A `docker-compose.yaml` file will be generated under the `docker-compose` folder. You can use that to manage your enviroment as well.
 
-# Kubernetes
+# Kubernetes (Not Supported Yet)
 ```
 cd docker-compose
 kompose convert -f docker-compose.yaml -o k8s
