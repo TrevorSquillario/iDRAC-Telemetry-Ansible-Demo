@@ -5,8 +5,12 @@ This project is based on the [iDRAC-Telemetry-Reference-Tools](https://github.co
 
 This project is not intended to be used directly in a production environment. It is an attempt at providing an quick start demo environment. As such only `InfluxDB` and `Grafana` are used. Other pumps can be added relatively easily. 
 
+```
+Instructions are based on RHEL/Rocky 9
+```
 1. Setup Python Virtual Environment (optional but recommended)
 ```
+sudo dnf install -y python3-pip
 pip install virtualenv
 mkdir ~/venv
 python -m virtualenv ~/venv/ansible-dell
@@ -40,7 +44,6 @@ cd iDRAC-Telemetry-Ansible-Demo
 
 ```
 # Install Python packages and Ansible Collections
-sudo dnf install python3-pip
 pip install -r requirements.txt
 ansible-galaxy collection install -r requirements.yaml --force
 ```
