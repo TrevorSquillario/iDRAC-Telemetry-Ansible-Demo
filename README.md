@@ -54,11 +54,12 @@ These variables will be used in the examples and should be filled in. You can al
 ```
 # iDRAC Credentials
 vault_oob_username: "root"
-vault_oob_password: "calvin"
+vault_oob_password: ""
 
 # Influx Credentials
-vault_docker_influxdb_init_admin_token: f7d69e28-894f-4901-8ec2-c797017f68cz
-vault_docker_influxdb_init_password: 5a12fa17-aefe-4aa1-968f-a60e77b83f76
+# Use uuidgen to generate token and password https://sensorsiot.github.io/IOTstack/Containers/InfluxDB2/
+vault_docker_influxdb_init_admin_token: 
+vault_docker_influxdb_init_password: 
 ```
 
 5. Make a copy `cp -r inventory/example inventory/lab` or update the inventory `inventory/example/hosts` file with your hosts. Update the host variable `oob_host` to identify the out-of-band (iDRAC) IP or hostname. The idea behind this is that the `inventory_hostname` is the actual server OS and the `oob_host` is the iDRAC.

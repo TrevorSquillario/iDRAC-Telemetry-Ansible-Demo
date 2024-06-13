@@ -1,6 +1,6 @@
 # iDRAC Credentials
 vault_oob_username: "root"
-vault_oob_password: "calvin"
+vault_oob_password: ""
 
 # Influx Credentials
 # Use uuidgen to generate token and password https://sensorsiot.github.io/IOTstack/Containers/InfluxDB2/
