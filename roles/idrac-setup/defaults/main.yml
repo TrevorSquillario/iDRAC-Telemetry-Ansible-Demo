@@ -22,6 +22,8 @@ idrac_attributes:
   TelemetrySystemUsage.1.EnableTelemetry: "Enabled"
   TelemetryThermalMetrics.1.EnableTelemetry: "Enabled"
   TelemetryThermalSensor.1.EnableTelemetry: "Enabled"
+  #TelemetryGPUMetrics.1.EnableTelemetry: "Enabled"
+  #TelemetryGPUStatistics.1.EnableTelemetry: "Enabled"
   # Enable Redfish Alerts (Events)
   RedfishEventing.1.EventEnable: "Enabled"
   # Setup NTP and Timezone so the time will be set properly, otherwise data might appear "missing" when really it's just time shifted

@@ -18,7 +18,7 @@ org = "my-org"
 client = InfluxDBClient(url="http://localhost:8086", token=token, org=org)
 
 query_train = '''from(bucket: "my-org-bucket")
-  |> range(start: 2024-06-10T00:00:00Z ,  stop: 2024-06-12T23:59:00Z)
+  |> range(start: -1w,  stop: now())
   |> filter(fn: (r) => r["_measurement"] == "telemetry")
   |> filter(fn: (r) => r["_field"] == "value")
   |> filter(fn: (r) => r["ServiceTag"]  == "9Z38MH3" )
@@ -68,7 +68,7 @@ def fit_predict_model(dataframe, interval_width = 0.99, changepoint_range = 0.8)
    m = Prophet(daily_seasonality = True, yearly_seasonality = True, weekly_seasonality = True,
                seasonality_mode = 'additive',
                interval_width = interval_width,
-               changepoint_range = changepoint_range)
+               changepoint_range = changepoint_range).add_seasonality(name='hourly', period=1/24, fourier_order = 1)
    m = m.fit(dataframe)
    forecast = m.predict(dataframe)
    forecast['fact'] = dataframe['y'].reset_index(drop = True)

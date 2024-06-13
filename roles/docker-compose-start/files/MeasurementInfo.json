@@ -1,25 +1,4 @@
 {
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "influxdb",
-      "name": "InfluxDB",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -39,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 10,
   "links": [],
   "panels": [
     {
@@ -172,7 +151,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SHOW TAG VALUES WITH KEY = \"FQDD\"",
+          "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"FQDD\" ",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -241,7 +220,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SHOW TAG VALUES WITH KEY = \"HostTags\"",
+          "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"HostTags\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -310,7 +289,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SHOW TAG VALUES WITH KEY = \"Label\"",
+          "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"Label\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -379,7 +358,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SHOW TAG VALUES WITH KEY = \"HostName\"",
+          "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"HostName\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -402,7 +381,7 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "MeasurementInfo",
-  "uid": "",
+  "uid": "ddodvl9ai2xhce",
   "version": 2,
   "weekStart": ""
 }

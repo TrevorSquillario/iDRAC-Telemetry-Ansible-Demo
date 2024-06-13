@@ -7,3 +7,9 @@
     src: docker-compose.yaml.j2
   tags:
     - generate-docker-compose
+
+- name: Create empty .env file if it doesn't exist already
+  copy:
+    content: ""
+    dest: "{{ docker_env_file }}"
+    force: false

@@ -1,25 +1,4 @@
 {
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.0.0"
-    },
-    {
-      "type": "datasource",
-      "id": "influxdb",
-      "name": "InfluxDB",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -45,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
+  "id": 9,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -134,7 +113,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'PowerMetrics') \n  AND (\"Label\" = 'PowerMetrics SystemHeadRoomInstantaneous' \n        OR \"Label\" = 'PowerMetrics SystemInputPower'\n        OR \"Label\" = 'PowerMetrics SystemOutputPower'\n        OR \"Label\" = 'PowerMetrics SystemPowerConsumption'\n        OR \"Label\" = 'PowerMetrics TotalCPUPower'\n        OR \"Label\" = 'PowerMetrics TotalFanPower' \n        OR \"Label\" = 'PowerMetrics TotalMemoryPower'\n        OR \"Label\" = 'PowerMetrics TotalPciePower'\n        OR \"Label\" = 'PowerMetrics TotalStoragePower'\n        OR \"Label\" = 'PowerMetrics TotalFPGAPower'\n        ) \n  GROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'PowerMetrics') \n  AND (\"Label\" = 'PowerMetrics SystemHeadRoomInstantaneous' \n        OR \"Label\" = 'PowerMetrics SystemInputPower'\n        OR \"Label\" = 'PowerMetrics SystemOutputPower'\n        OR \"Label\" = 'PowerMetrics SystemPowerConsumption'\n        OR \"Label\" = 'PowerMetrics TotalCPUPower'\n        OR \"Label\" = 'PowerMetrics TotalFanPower' \n        OR \"Label\" = 'PowerMetrics TotalMemoryPower'\n        OR \"Label\" = 'PowerMetrics TotalPciePower'\n        OR \"Label\" = 'PowerMetrics TotalStoragePower'\n        OR \"Label\" = 'PowerMetrics TotalFPGAPower'\n        ) \n  GROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -200,7 +179,27 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "anomaly._value { Label: SystemUsage CPUUsage, ServiceTag: 9Z38MH3, FQDD: SystemUsage }"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "points"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 13,
@@ -228,7 +227,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'SystemUsage') \n  AND (\"Label\" = 'SystemUsage CPUUsage'\n        OR \"Label\" = 'SystemUsage IOUsage'\n        OR \"Label\" = 'SystemUsage MemoryUsage'\n        ) \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'SystemUsage') \n  AND (\"Label\" = 'SystemUsage CPUUsage'\n        OR \"Label\" = 'SystemUsage IOUsage'\n        OR \"Label\" = 'SystemUsage MemoryUsage'\n        ) \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -322,7 +321,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'PS1 Current 1' OR \"FQDD\" = 'PS2 Current 2') \n  AND (\"Label\" = 'PS1 Current 1 AmpsReading'\n        OR \"Label\" = 'PS2 Current 2 AmpsReading'\n        ) \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'PS1 Current 1' OR \"FQDD\" = 'PS2 Current 2') \n  AND (\"Label\" = 'PS1 Current 1 AmpsReading'\n        OR \"Label\" = 'PS2 Current 2 AmpsReading'\n        ) \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -333,7 +332,7 @@
             "uid": "ddn8c4swkqo00f"
           },
           "hide": false,
-          "query": "  SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'PS1 Voltage 1' OR \"FQDD\" = 'PS2 Voltage 2') \n  AND (\"Label\" = 'PS1 Voltage 1 VoltageReading'\n        OR \"Label\" = 'PS2 Voltage 2 VoltageReading'\n        ) \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "  SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'PS1 Voltage 1' OR \"FQDD\" = 'PS2 Voltage 2') \n  AND (\"Label\" = 'PS1 Voltage 1 VoltageReading'\n        OR \"Label\" = 'PS2 Voltage 2 VoltageReading'\n        ) \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "time_series"
@@ -427,7 +426,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'Thermal') \n  AND (\"Label\" = 'Thermal ComputePower'\n        OR \"Label\" = 'Thermal ITUE'\n        OR \"Label\" = 'Thermal PSUEfficiency'\n        OR \"Label\" = 'Thermal PowerToCoolRatio'\n        OR \"Label\" = 'Thermal SysAirFlowEfficiency'\n        OR \"Label\" = 'Thermal SysAirflowPerFanPower'\n        OR \"Label\" = 'Thermal SysAirflowPerSysInputPower'\n        OR \"Label\" = 'Thermal SysAirflowUtilizatio'\n        OR \"Label\" = 'Thermal SysNetAirflow'\n        OR \"Label\" = 'Thermal SysRackTempDelta'\n        OR \"Label\" = 'Thermal TotalPSUHeatDissipatio'\n        ) \n  GROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'Thermal') \n  AND (\"Label\" = 'Thermal ComputePower'\n        OR \"Label\" = 'Thermal ITUE'\n        OR \"Label\" = 'Thermal PSUEfficiency'\n        OR \"Label\" = 'Thermal PowerToCoolRatio'\n        OR \"Label\" = 'Thermal SysAirFlowEfficiency'\n        OR \"Label\" = 'Thermal SysAirflowPerFanPower'\n        OR \"Label\" = 'Thermal SysAirflowPerSysInputPower'\n        OR \"Label\" = 'Thermal SysAirflowUtilizatio'\n        OR \"Label\" = 'Thermal SysNetAirflow'\n        OR \"Label\" = 'Thermal SysRackTempDelta'\n        OR \"Label\" = 'Thermal TotalPSUHeatDissipatio'\n        ) \n  GROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -521,7 +520,7 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "  SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" =~ /DIMM/) \n  GROUP BY ServiceTag, FQDD, Label",
+          "query": "  SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" =~ /DIMM/) \n  GROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -616,7 +615,7 @@
             "uid": "ddn8c4swkqo00f"
           },
           "hide": false,
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'System Board Exhaust Temp' OR \"FQDD\" = 'System Board Inlet Temp') \n  AND (\"Label\" = 'System Board Exhaust Temp TemperatureReading'\n        OR \"Label\" = 'System Board Inlet Temp TemperatureReading'\n        ) \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'System Board Exhaust Temp' OR \"FQDD\" = 'System Board Inlet Temp') \n  AND (\"Label\" = 'System Board Exhaust Temp TemperatureReading'\n        OR \"Label\" = 'System Board Inlet Temp TemperatureReading'\n        ) \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -627,7 +626,7 @@
             "uid": "ddn8c4swkqo00f"
           },
           "hide": false,
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" = 'Thermal') \n  AND (\"Label\" = 'Thermal SysRackTempDelta') \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" = 'Thermal') \n  AND (\"Label\" = 'Thermal SysRackTempDelta') \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "time_series"
@@ -721,13 +720,107 @@
             "type": "influxdb",
             "uid": "ddn8c4swkqo00f"
           },
-          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"FQDD\" =~ /^SMARTData/) \n  AND (\"Label\" =~ /ReallocatedBlockCount$/\n        OR \"Label\" =~ /CommandTimeout$/\n        OR \"Label\" =~ /CurrentPendingSectorCount$/\n        OR \"Label\" =~ /UncorrectableErrorCount$/\n      ) \nGROUP BY ServiceTag, FQDD, Label",
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" =~ /^SMARTData/) \n  AND (\"Label\" =~ /ReallocatedBlockCount$/\n        OR \"Label\" =~ /CommandTimeout$/\n        OR \"Label\" =~ /CurrentPendingSectorCount$/\n        OR \"Label\" =~ /UncorrectableErrorCount$/\n      ) \nGROUP BY ServiceTag, HostName, FQDD, Label",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
         }
       ],
       "title": "SMART Data",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "ddn8c4swkqo00f"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 13,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "maxHeight": 600,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "ddn8c4swkqo00f"
+          },
+          "query": "SELECT value FROM \"telemetry\" WHERE ($timeFilter) \n  AND (\"ServiceTag\" =~ /${ServiceTag:regex}/) \n  AND (\"HostName\" =~ /${HostName:regex}/) \n  AND (\"FQDD\" =~ /^Video.Slot/) \nGROUP BY ServiceTag, HostName, FQDD, Label",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "GPU",
       "type": "timeseries"
     }
   ],
@@ -736,18 +829,49 @@
   "templating": {
     "list": [
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "influxdb",
           "uid": "ddn8c4swkqo00f"
         },
-        "definition": "import \"influxdata/influxdb/schema\"\r\nschema.measurementTagValues(\r\n    bucket: \"my-org-bucket\",\r\n    measurement: \"telemetry\",\r\n    tag: \"ServiceTag\",\r\n)",
+        "definition": "SHOW TAG VALUES FROM telemetry WITH KEY = \"ServiceTag\"",
         "hide": 0,
         "includeAll": true,
         "multi": true,
         "name": "ServiceTag",
         "options": [],
-        "query": "import \"influxdata/influxdb/schema\"\r\nschema.measurementTagValues(\r\n    bucket: \"my-org-bucket\",\r\n    measurement: \"telemetry\",\r\n    tag: \"ServiceTag\",\r\n)",
+        "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"ServiceTag\"",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "influxdb",
+          "uid": "ddn8c4swkqo00f"
+        },
+        "definition": "SHOW TAG VALUES FROM telemetry WITH KEY = \"HostName\"",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "HostName",
+        "options": [],
+        "query": "SHOW TAG VALUES FROM telemetry WITH KEY = \"HostName\"",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -764,7 +888,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "SystemMonitorAll",
-  "uid": "",
-  "version": 5,
+  "uid": "ddodvl6lliqkge",
+  "version": 9,
   "weekStart": ""
 }
