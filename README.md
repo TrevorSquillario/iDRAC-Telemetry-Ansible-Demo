@@ -14,6 +14,8 @@ sudo dnf install -y python3-pip
 pip install virtualenv
 mkdir ~/venv
 python -m virtualenv ~/venv/ansible-dell
+
+# You can add this command to your ~/.bash_profle if you want it to run on every login
 source ~/venv/ansible-dell/bin/activate
 ```
 

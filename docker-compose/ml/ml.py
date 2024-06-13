@@ -17,12 +17,10 @@ from fastapi import FastAPI, Response, status
 from pydantic import BaseModel, Field
 from typing import List
 from logging.config import dictConfig
-from log_config.config import log_config
 from contextlib import ExitStack
 
 logging.getLogger("prophet").setLevel(logging.WARNING)
 #logging.getLogger("cmdstanpy").disabled=True
-#dictConfig(log_config) 
 cmdstanpy_logger = logging.getLogger('cmdstanpy')
 cmdstanpy_logger.addHandler(logging.NullHandler())
 cmdstanpy_logger.propagate = False
