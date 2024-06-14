@@ -8,8 +8,6 @@
   - install.vars.yaml
   roles:
   - role: docker-compose-generate
-    vars:
-      enable_ml_pump: True
     tags: 
       - generate
 

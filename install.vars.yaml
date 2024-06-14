@@ -1,5 +1,9 @@
 ---
 # vars file for telemetry-demo
+enable_influx: False
+enable_influx_ml_pump: False
+enable_prometheus: True
+
 # Telemetry Vars
 MESSAGEBUS_HOST: activemq
 MESSAGEBUS_PORT: 61613
@@ -24,7 +28,14 @@ CHK_INFLUX_PROMETHEUS: influx_setup_finish
 GRAFANA_URL: http://localhost
 GRAFANA_ADMIN_USER: admin
 GRAFANA_ADMIN_PASSWORD: admin
-GRAFANA_DATASOURCE_UID: ddn8c4swkqo00f
+GRAFANA_INFLUXDB_DATASOURCE_UID: ddn8c4swkqo00f
 GRAFANA_SMTP_ENABLED: true
 GRAFANA_SMTP_HOST: mail.delllabs.net:25
 GRAFANA_SMTP_FROM_ADDRESS: noreply@Dell.com
+
+# Prometheus
+GRAFANA_PROMETHEUS_DATASOURCE_UID: ddn8c4swkqo00g
+PROMETHEUS_DB: poweredge_telemetry_metrics
+PROMETHEUS_URL: http://prometheus:9090
+DOCKER_PROMETHEUS_INIT_ADMIN_TOKEN: "{{ vault_docker_influxdb_init_admin_token }}"
+DOCKER_PROMETHEUS_INIT_PASSWORD: "{{ vault_docker_influxdb_init_password }}"

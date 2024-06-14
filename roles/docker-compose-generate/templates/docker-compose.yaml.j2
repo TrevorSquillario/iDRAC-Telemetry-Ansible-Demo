@@ -55,6 +55,7 @@ networks:
 
 volumes:
   influxdb-storage:
+  prometheus-storage:
   grafana-storage:
   ml-storage:
   kapacitor-storage:
@@ -91,6 +92,7 @@ services:
         max-size: "1G"
         max-file: "10"
 
+{% if enable_influx %}
   influx:
     ############################################################################
     # INFLUX - start an influx db backend. for testing mostly
@@ -163,7 +165,7 @@ services:
         <<: *base-args
         CMD: influxpump
 
-{% if enable_ml_pump %}
+{% if enable_influx_ml_pump %}
   ml: 
     build:
       context: .
@@ -205,6 +207,68 @@ services:
         <<: *base-args
         CMD: mlpump
 {% endif %}
+{% endif %}
+
+{% if enable_prometheus %}
+  prometheus:
+      ############################################################################
+      # PROMETHEUS - test prometheus database
+      #
+      # If you want to connect to an external prometheus database,
+      # set the following environment variables:
+      #
+      # TODO: add
+      #
+      ############################################################################
+      image: prom/prometheus:latest
+      restart: always
+      container_name: prometheus
+      volumes:
+        - type: bind
+          source: cmd/prometheuspump/prometheus.yml
+          target: /config/prometheus.yml
+          read_only: true
+        - prometheus-storage:/prometheus
+      environment:
+        node.name: prometheus
+        DOCKER_PROMETHEUS_INIT_ADMIN_TOKEN: "{{ DOCKER_PROMETHEUS_INIT_ADMIN_TOKEN }}"
+        DOCKER_PROMETHEUS_INIT_PASSWORD: "{{ DOCKER_PROMETHEUS_INIT_PASSWORD }}"
+        PROMETHEUS_DB: "{{ PROMETHEUS_DB }}"
+      command:
+        - '--config.file=/config/prometheus.yml'
+        - '--storage.tsdb.path=/prometheus'
+        #- '--log.level=debug'
+      ports:
+        - "9090:9090"  
+      networks:
+        - idrac-telemetry-network
+
+  prometheus-pump-standalone: 
+    ############################################################################
+    # PROMETHEUS PUMP - data pump to pump telemetry into prometheus
+    #
+    # If you want to connect to an external prometheus database,
+    # set the following environment variables:
+    #
+    #  PROMETHEUSDB_SERVER: prometheus-hostname
+    #
+    ############################################################################
+    <<: *refdaemon
+    image: prometheuspump:latest
+    container_name: prometheuspump
+    depends_on:
+      - activemq
+    environment:
+      <<: *messagebus-env
+      PROMETHEUSDB_SERVER: prometheus
+    build:
+      <<: *base-build
+      args:
+        <<: *base-args
+        CMD: prometheuspump
+    ports:
+      - "2112:2112"    
+{% endif %}
 
   grafana:
     ############################################################################
@@ -233,8 +297,6 @@ services:
       - ./resolv.conf:/etc/resolv.conf
       - grafana-storage:/var/lib/grafana
       - ./:/var/lib/grafana/grafana-polystat-panel
-    depends_on:
-      - influx
     environment:
       <<: [*influx-env, *grafana-env]
       GF_INSTALL_PLUGINS: grafana-polystat-panel

@@ -1,0 +1,322 @@
+- name: InfluxDB API Ready
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+  until: influx_status_output.status == 200
+  retries: 5
+  delay: 1
+  register: influx_status_output
+  tags:
+  - influx-pump-config
+
+- name: Show results
+  ansible.builtin.debug:
+    var: influx_status_output
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Create User
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/users"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 201
+      - 422
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: POST
+    body_format: json
+    body: 
+      name: "{{ INFLUXDB_USER }}"
+  register: influx_create_user_output
+  tags:
+  - influx-pump-config
+
+- name: Show results
+  ansible.builtin.debug:
+    var: influx_create_user_output.json
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Get User ID
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/users?name={{ INFLUXDB_USER }}"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+  register: influx_user_id_output
+  tags:
+  - influx-pump-config
+
+- name: Set Create User Fact
+  ansible.builtin.set_fact:
+    influxdb_user_id: "{{ influx_user_id_output.json.users[0].id }}"
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Get Org ID
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/orgs?name={{ INFLUX_ORG }}"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+  register: influx_org_id_output
+  tags:
+  - influx-pump-config
+
+- name: Set Create Org ID Fact
+  ansible.builtin.set_fact:
+    influxdb_org_id: "{{ influx_org_id_output.json.orgs[0].id }}"
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Add User to Org
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/orgs/{{ influxdb_org_id }}/members"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 201
+      - 500
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: POST
+    body_format: json
+    body: 
+      id: "{{ influxdb_user_id }}"
+      name: "{{ INFLUX_ORG }}"
+  register: influx_status_output
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Set User Password
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/users/{{ influxdb_user_id }}/password"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 204
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: POST
+    body_format: json
+    body: 
+      password: "{{ DOCKER_INFLUXDB_INIT_PASSWORD }}"
+  register: influx_status_output
+  tags:
+  - influx-pump-config
+  #no_log: True
+
+- debug:
+    msg: "INFLUX_TOKEN: {{ INFLUX_TOKEN }}"
+  tags:
+  - influx-pump-config
+
+#- debug: var=vars
+#  tags:
+#    - influx-pump-config
+
+- name: InfluxDB API - Create Token
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/authorizations"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 201
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: POST
+    body_format: json
+    body: 
+      userID: "{{ influxdb_user_id }}"
+      orgID: "{{ influxdb_org_id }}"
+      description: "{{ INFLUXDB_USER }}"
+      permissions: "{{ lookup('template','influxdb_permissions.json.j2') }}"
+  register: influx_create_token_output
+  when: INFLUX_TOKEN == None
+  tags:
+  - influx-pump-config
+  - grafana-setup
+
+- name: Set Create Telemetry User Token Fact
+  ansible.builtin.set_fact:
+    influxdb_user_token: "{{ influx_create_token_output.json.token }}"
+  when: INFLUX_TOKEN == None
+  tags:
+  - influx-pump-config
+  - grafana-setup
+
+- name: Set Create Telemetry User Token From .env
+  ansible.builtin.set_fact:
+    influxdb_user_token: "{{ INFLUX_TOKEN }}"
+  when: INFLUX_TOKEN != None
+  tags:
+  - influx-pump-config
+  - grafana-setup
+
+- name: InfluxDB API - Get Bucket ID
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/buckets?name={{ INFLUX_BUCKET }}"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: GET
+  register: influx_bucket_id_output
+  tags:
+  - influx-pump-config
+
+- name: Set Bucket ID Fact
+  ansible.builtin.set_fact:
+    influxdb_bucket_id: "{{ influx_bucket_id_output.json.buckets[0].id }}"
+  tags:
+  - influx-pump-config
+
+# Enable v1 compatibility
+
+- name: InfluxDB API - Get DBRP Mapping
+  uri:
+    #url: "{{INFLUXDB_CONFIG_URL}}/api/v2/dbrps?orgID={{ influxdb_org_id }}&bucketID={{ influxdb_bucket_id }}"
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/dbrps?orgID={{ influxdb_org_id }}&db={{ INFLUXDB_DB }}"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: GET
+  register: influx_dbrp_mapping_output
+  tags:
+  - influx-pump-config
+
+- name: Show results
+  ansible.builtin.debug:
+    var: influx_dbrp_mapping_output
+  tags:
+  - influx-pump-config
+
+- name: InfluxDB API - Create DBRP Mapping
+  uri:
+    url: "{{INFLUXDB_CONFIG_URL}}/api/v2/dbrps"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 201
+    headers:
+      Authorization: "Token {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+      Content-Type: "application/json"
+    method: POST
+    body_format: json
+    body: 
+      bucketID: "{{ influxdb_bucket_id }}"
+      orgID: "{{ influxdb_org_id }}"
+      database: "{{ INFLUXDB_DB }}"
+      default: True
+      retention_policy: autogen
+  when: influx_dbrp_mapping_output.json.content | length == 0
+  tags:
+  - influx-pump-config
+
+- name: Create .env file
+  copy:
+    content: ""
+    dest: "{{playbook_dir}}/docker-compose/.env"
+    force: false
+
+- name: Update .env
+  lineinfile:
+    dest: "{{playbook_dir}}/docker-compose/.env"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - regexp: "^MY_PROJECT_NAME:.*"
+      line: "MY_PROJECT_NAME: {{ docker_container_name_prefix }}"
+    - regexp: "^INFLUX_TOKEN:.*"
+      line: "INFLUX_TOKEN: {{ influxdb_user_token }}"
+    - regexp: "^INFLUX_ADMIN_TOKEN:.*"
+      line: "INFLUX_ADMIN_TOKEN: {{ DOCKER_INFLUXDB_INIT_ADMIN_TOKEN }}"
+    - regexp: "^INFLUX_ORG:.*"
+      line: "INFLUX_ORG: {{ INFLUX_ORG }}"
+    - regexp: "^INFLUX_ORG_ID:.*"
+      line: "INFLUX_ORG_ID: {{ influxdb_org_id }}"
+    - regexp: "^INFLUXDB_USER:.*"
+      line: "INFLUXDB_USER: {{ INFLUXDB_USER }}"
+    - regexp: "^INFLUXDB_USER_ID:.*"
+      line: "INFLUXDB_USER_ID: {{ influxdb_user_id }}"
+    - regexp: "^INFLUXDB_PASS:.*"
+      line: "INFLUXDB_PASS: {{ DOCKER_INFLUXDB_INIT_PASSWORD }}"
+    - regexp: "^INFLUX_BUCKET:.*"
+      line: "INFLUX_BUCKET: {{ INFLUX_BUCKET }}"
+    - regexp: "^INFLUX_BUCKET_ID:.*"
+      line: "INFLUX_BUCKET_ID: {{ influxdb_bucket_id }}"
+    - regexp: "^INFLUX_HOST:.*"
+      line: "INFLUX_HOST: {{ INFLUX_HOST }}"
+    - regexp: "^INFLUXDB_URL:.*"
+      line: "INFLUXDB_URL: {{ INFLUXDB_URL }}"
+    - regexp: "^GRAFANA_SMTP_ENABLED:.*"
+      line: "GRAFANA_SMTP_ENABLED: {{ GRAFANA_SMTP_ENABLED }}"
+    - regexp: "^GRAFANA_SMTP_HOST:.*"
+      line: "GRAFANA_SMTP_HOST: {{ GRAFANA_SMTP_HOST }}"
+    - regexp: "^GRAFANA_SMTP_FROM_ADDRESS:.*"
+      line: "GRAFANA_SMTP_FROM_ADDRESS: {{ GRAFANA_SMTP_FROM_ADDRESS }}"
+  tags:
+  - influx-pump-config
+
+- name: Grafana - Create InfluxDB Datasource
+  community.grafana.grafana_datasource:
+    name: "InfluxDBDataSource"
+    uid: "{{ GRAFANA_INFLUXDB_DATASOURCE_UID }}" # Hardcode uid to make importing dashboards work properly
+    grafana_url: "{{ GRAFANA_URL }}"
+    grafana_api_key: "{{ grafana_api_key }}"
+    ds_type: "influxdb"
+    ds_url: "{{ INFLUXDB_URL }}"
+    database: "{{ INFLUXDB_DB }}"
+    #user: "{{ INFLUXDB_USER }}"
+    additional_json_data:
+      dbName: "{{ INFLUXDB_DB }}"
+      organization: "{{ INFLUX_ORG }}"
+      httpHeaderName1: "Authorization"
+    additional_secure_json_data:
+      httpHeaderValue1: "Token {{ influxdb_user_token }}"
+    enforce_secure_data: true
+    is_default: true
+    sslmode: disable
+    tls_skip_verify: true
+  tags:
+  - grafana-setup
+
+- name: Grafana - Import Default Dashboards
+  community.grafana.grafana_dashboard:
+    grafana_url: "{{ GRAFANA_URL }}"
+    grafana_api_key: "{{ grafana_api_key }}"
+    validate_certs : false
+    commit_message: Updated by ansible
+    overwrite: false
+    path: "{{ role_path }}/files/{{ item }}"
+  loop:
+  - AlertInfo.json
+  - SystemMonitorAll.json
+  - MeasurementInfo.json
+  ignore_errors: true
+  tags:
+  - grafana-setup

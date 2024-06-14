@@ -1,5 +1,7 @@
 ---
 # defaults file for docker-compose-start
+enable_prometheus: False
+enable_influx: True
 docker_container_name_prefix: "test1-"
 
 # Docker environment variables

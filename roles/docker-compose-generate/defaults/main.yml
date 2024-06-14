@@ -2,4 +2,6 @@
 # defaults file for telemetry-demo
 docker_compose_file: "{{playbook_dir}}/docker-compose/docker-compose.yaml"
 docker_env_file: "{{playbook_dir}}/docker-compose/.env"
-enable_ml_pump: False
+enable_influx_ml_pump: False
+enable_prometheus: False
+enable_influx: True

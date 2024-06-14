@@ -1,0 +1,16 @@
+---
+- hosts: all
+  name: Install and Run stress-ng
+  become: yes
+  vars_files:
+  - vault.yaml
+  tasks:
+  - name: Install CUDA Toolkit
+    ansible.builtin.package:
+      name: cuda-toolkit-12-5
+      state: present
+
+  # ln -s /usr/local/cuda-12.5 /usr/local/cuda
+
+  - name: Run stress-ng
+    shell: stress-ng --gpu 1 --timeout 300 --metrics-brief
