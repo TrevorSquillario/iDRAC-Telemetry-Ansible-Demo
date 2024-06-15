@@ -28,7 +28,7 @@ func getValidMetricName(name string) string {
 	// Metric names can contain letters, numbers, underscores, or colons, based on the regular expression [a-zA-Z_:][a-zA-Z0-9_:]*.
 	// Reserve colons (:) in the name for calculated or aggregated metrics, such as those produced by rollup rules.
 
-	// Rename Context 'SMARTData:Disk.Bay.0:Enclosure.Internal.0-1:RAID.SL.3-1' to 'SMARTData'
+	// Rename Context like 'SMARTData:Disk.Bay.0:Enclosure.Internal.0-1:RAID.SL.3-1' to 'SMARTData'
 	colon_match := strings.Index(name, ":")
 	var new_name string
 	if colon_match > -1 {

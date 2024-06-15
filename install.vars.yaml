@@ -1,8 +1,9 @@
 ---
 # vars file for telemetry-demo
 enable_influx: False
-enable_influx_ml_pump: False
+enable_influx_ml: False
 enable_prometheus: True
+enable_prometheus_ml: True
 
 # Telemetry Vars
 MESSAGEBUS_HOST: activemq

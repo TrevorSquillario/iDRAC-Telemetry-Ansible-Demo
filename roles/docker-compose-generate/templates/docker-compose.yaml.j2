@@ -165,7 +165,7 @@ services:
         <<: *base-args
         CMD: influxpump
 
-{% if enable_influx_ml_pump %}
+{% if enable_influx_ml %}
   ml: 
     build:
       context: .
@@ -268,6 +268,34 @@ services:
         CMD: prometheuspump
     ports:
       - "2112:2112"    
+
+{% if enable_prometheus_ml %}
+  prometheus-ml: 
+    ############################################################################
+    # PROMETHEUS ML 
+    # This application leverages machine learning algorithms such as Fourier and Prophet models 
+    # to perform time series forecasting and predict anomalous behavior in the metrics. 
+    # The predicted values are compared with the actual values and if they differ from the default threshold values, 
+    # it is flagged as an anomaly.
+    # 
+    # https://github.com/AICoE/prometheus-anomaly-detector
+    ############################################################################
+    image: quay.io/aicoe/prometheus-anomaly-detector:latest
+    container_name: prometheusml
+    depends_on:
+      - prometheus
+    environment:
+      FLT_PROM_URL: "{{ PROMETHEUS_URL }}"
+      FLT_RETRAINING_INTERVAL_MINUTES: 15
+      FLT_METRICS_LIST: 'PowerEdge_SystemUsage_CPUUsage{ServiceTag="9Z38MH3"}'
+      APP_FILE: app.py
+      FLT_DATA_START_TIME: 3d
+      FLT_ROLLING_TRAINING_WINDOW_SIZE: 15d
+    ports:
+      - "2113:8080" 
+    networks:
+      - idrac-telemetry-network   
+{% endif %}
 {% endif %}
 
   grafana:
