@@ -100,14 +100,8 @@ The `install.yaml` file includes 3 roles:
 
 ### Your grafana instance should now be available at http://ip running on port `80` with username `admin` and password `admin`
 
-# Docker
+## Docker
 A `docker-compose.yaml` file will be generated under the `docker-compose` folder. You can use that to manage your enviroment as well.
-
-# Kubernetes (Not Supported Yet)
-```
-cd docker-compose
-kompose convert -f docker-compose.yaml -o k8s
-```
 
 ## Process Flow
 
@@ -131,8 +125,34 @@ This application utilizes a microservices architecture with messages passing thr
 - simpleauth: Handles iDRAC authentication
 - simpledisc: Read `config.ini` file and send new devices to bus to be processed by `simpleauth`
 
-## Troubleshooting
 
+## Kubernetes
+### Registry (Deployed from kubespray)
+```
+kubectl get service registry -n kube-system
+# Change from ClusterIP to NodePort
+kubectl patch svc registry -n kube-system -p '{"spec": {"type": "NodePort"}}'
+
+kubectl describe service registry -n kube-system
+kubectl describe service registry -n kube-system | grep NodePort
+kubectl describe pod registry-c4l7q -n kube-system | grep Node
+
+docker tag influxdb {NodeIP}:{NodePort}/influxdb:latest
+sudo vi /etc/docker/daemon.json
+{
+  "insecure-registries":["{NodeIP}:{NodePort}"]
+}
+
+docker push {NodeIP}:{NodePort}/influxdb:latest
+```
+
+### Helm
+```
+helm dependency update ./redfishread
+helm install test redfishread --dry-run
+```
+
+## Troubleshooting
 ### Reset
 ```
 # Reset ALL
