@@ -8,10 +8,12 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+    {{- range .Values.service.ports }}
+    - port: {{ .port }}
+      targetPort: {{ .targetPort | default .port }}
+      protocol: {{ .protocol | default "TCP" }}
+      name: {{ .name | default "http" }}
+    {{- end }}
   selector:
     {{- include "shared-lib.selectorLabels" . | nindent 4 }}
 {{- end -}}

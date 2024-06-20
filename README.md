@@ -148,8 +148,18 @@ docker push {NodeIP}:{NodePort}/influxdb:latest
 
 ### Helm
 ```
+helm dependency update ./influxpump
+helm dependency update ./mlpump
+helm dependency update ./prometheuspump
 helm dependency update ./redfishread
+helm dependency update ./simpleauth
+helm dependency update ./simpledisc
 helm install test redfishread --dry-run
+
+# Grafana
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm install test grafana/grafana --values ./grafana/values.yaml
 ```
 
 ## CI/CD

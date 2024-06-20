@@ -1,0 +1,6 @@
+dependencies:
+- name: shared-lib
+  repository: file://../shared-lib
+  version: 0.1.0
+digest: sha256:4cdc93a770ba032a721ca4da89f9046cc6aa0f068555ca9b82dfd71daf796e29
+generated: "2024-06-19T10:24:41.480215547-06:00"

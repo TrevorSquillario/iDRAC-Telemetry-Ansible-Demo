@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/TrevorSquillario/redfishread
+  repository: ghcr.io/TrevorSquillario/prometheuspump
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -42,7 +42,7 @@ securityContext: {}
 service:
   type: ClusterIP
   ports:
-    - port: 80
+    - port: 2112
 
 ingress:
   enabled: false
@@ -110,3 +110,4 @@ affinity: {}
 env:
   MESSAGEBUS_HOST: "activemq"
   MESSAGEBUS_PORT: "61613"
+  PROMETHEUSDB_SERVER: prometheus
