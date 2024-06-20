@@ -18,8 +18,23 @@ jobs:
       matrix:
         include:
           - dockerfile: Dockerfile
+            image: ghcr.io/TrevorSquillario/influxpump
+            cmd: influxpump
+          - dockerfile: Dockerfile.ml
+            image: ghcr.io/TrevorSquillario/mlpump
+            cmd: mlpump
+          - dockerfile: Dockerfile
+            image: ghcr.io/TrevorSquillario/prometheuspump
+            cmd: prometheuspump
+          - dockerfile: Dockerfile
             image: ghcr.io/TrevorSquillario/redfishread
             cmd: redfishread
+          - dockerfile: Dockerfile
+            image: ghcr.io/TrevorSquillario/simpleauth
+            cmd: simpleauth
+          - dockerfile: Dockerfile
+            image: ghcr.io/TrevorSquillario/simpledisc
+            cmd: simpledisc
     permissions:
       contents: read
       packages: write

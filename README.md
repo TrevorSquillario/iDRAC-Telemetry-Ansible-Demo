@@ -155,6 +155,8 @@ helm install test redfishread --dry-run
 ## CI/CD
 ### GitHub Actions
 
+View GHCR Images
+https://github.com/TrevorSquillario?tab=packages
 
 
 ## Troubleshooting
