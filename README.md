@@ -152,6 +152,11 @@ helm dependency update ./redfishread
 helm install test redfishread --dry-run
 ```
 
+## CI/CD
+### GitHub Actions
+
+
+
 ## Troubleshooting
 ### Reset
 ```
