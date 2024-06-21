@@ -13,7 +13,7 @@
 #      tags: 
 #        - kompose
 
-- hosts: all
+- hosts: k8s
   name: Install Nvidia Driver
   become: yes
   vars_files:
@@ -24,6 +24,22 @@
         nvidia_driver_branch: latest
       tags:
         - nvidia
+
+- hosts: localhost
+  connection: local
+  name: Generate Docker Compose
+  gather_facts: False
+  become: no
+  vars_files:
+  - vault.yaml
+  - install.vars.yaml
+  roles:
+    - role: k8s-metallb
+      vars:
+        ip_pool_first: "{{ vault_ip_pool_first }}"
+        ip_pool_last: "{{ vault_ip_pool_last }}"
+      tags:
+        - metallb
 
 #- hosts: k8s
 #  name: Install Kubernetes

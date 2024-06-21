@@ -142,8 +142,8 @@ dnsConfig: {}
 securityContext:
   runAsNonRoot: true
   runAsUser: 472
-  runAsGroup: 472
-  fsGroup: 472
+  runAsGroup: 1000 # Fix for 'database is locked error on container init'
+  fsGroup: 1000 # Fix for 'database is locked error on container init'
 
 containerSecurityContext:
   allowPrivilegeEscalation: false
@@ -223,7 +223,7 @@ gossipPortName: gossip
 ##
 service:
   enabled: true
-  type: ClusterIP
+  type: LoadBalancer
   loadBalancerIP: ""
   loadBalancerClass: ""
   loadBalancerSourceRanges: []
@@ -254,6 +254,9 @@ serviceMonitor:
   targetLabels: []
 
 extraExposePorts: []
+  #- name: http
+  #  port: 80
+  #  targetPort: 3000
  # - name: keycloak
  #   port: 8080
  #   targetPort: 8080
@@ -367,7 +370,7 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: true
-  # storageClassName: default
+  storageClassName: isilon
   accessModes:
     - ReadWriteOnce
   size: 10Gi
@@ -397,7 +400,7 @@ initChownData:
   ## If false, data ownership will not be reset at startup
   ## This allows the grafana-server to be run with an arbitrary user
   ##
-  enabled: true
+  enabled: false
 
   ## initChownData container image
   ##
@@ -601,15 +604,17 @@ plugins: []
 ## Configure grafana datasources
 ## ref: http://docs.grafana.org/administration/provisioning/#datasources
 ##
-datasources: {}
-#  datasources.yaml:
-#    apiVersion: 1
-#    datasources:
-#    - name: Prometheus
-#      type: prometheus
-#      url: http://prometheus-prometheus-server
-#      access: proxy
-#      isDefault: true
+datasources: 
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: PrometheusDataSource
+      type: prometheus
+      uid: ddn8c4swkqo00g
+      url: http://prometheus-server # Internal pod name
+      access: proxy
+      database: poweredge_telemetry_metrics
+      isDefault: true
 #    - name: CloudWatch
 #      type: cloudwatch
 #      access: proxy
@@ -787,6 +792,8 @@ grafana.ini:
     url: https://grafana.net
   server:
     domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ .Values.ingress.hosts | first }}{{ else }}''{{ end }}"
+  database:
+    wal: true # Fix for 'database is locked error on container init'
 ## grafana Authentication can be enabled with the following values on grafana.ini
  # server:
       # The full public facing url you use in browser, used for redirects and emails

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "test" ]
     # Publish semver tags as releases.
-    #tags: [ 'v*.*.*' ]
+    tags: [ 'v*.*.*' ]
 
 env:
   REGISTRY: ghcr.io
@@ -18,22 +18,22 @@ jobs:
       matrix:
         include:
           - dockerfile: Dockerfile
-            image: ghcr.io/TrevorSquillario/influxpump
+            image: ghcr.io/trevorsquillario/influxpump
             cmd: influxpump
           - dockerfile: Dockerfile.ml
-            image: ghcr.io/TrevorSquillario/mlpump
+            image: ghcr.io/trevorsquillario/mlpump
             cmd: mlpump
           - dockerfile: Dockerfile
-            image: ghcr.io/TrevorSquillario/prometheuspump
+            image: ghcr.io/trevorsquillario/prometheuspump
             cmd: prometheuspump
           - dockerfile: Dockerfile
-            image: ghcr.io/TrevorSquillario/redfishread
+            image: ghcr.io/trevorsquillario/redfishread
             cmd: redfishread
           - dockerfile: Dockerfile
-            image: ghcr.io/TrevorSquillario/simpleauth
+            image: ghcr.io/trevorsquillario/simpleauth
             cmd: simpleauth
           - dockerfile: Dockerfile
-            image: ghcr.io/TrevorSquillario/simpledisc
+            image: ghcr.io/trevorsquillario/simpledisc
             cmd: simpledisc
     permissions:
       contents: read

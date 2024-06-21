@@ -1,0 +1,4 @@
+---
+# defaults file for k8s-metallb
+ip_pool_first: 192.168.1.100
+ip_pool_last: 192.168.1.200
