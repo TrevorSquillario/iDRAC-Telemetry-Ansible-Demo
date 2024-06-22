@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/TrevorSquillario/simpledisc
+  repository: ghcr.io/trevorsquillario/simpledisc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -72,14 +72,18 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: 
+  exec:
+    command:
+    - /bin/bash
+    - -c
+    - ps -ef | grep /app/start | grep -v grep
+readinessProbe: 
+ exec:
+    command:
+    - /bin/bash
+    - -c
+    - ps -ef | grep /app/start | grep -v grep
 
 autoscaling:
   enabled: false

@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: rmohr/activemq:latest
+  repository: rmohr/activemq
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -79,14 +79,16 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
+livenessProbe: 
+  tcpSocket:
+    port: 61613
+  initialDelaySeconds: 15
+  periodSeconds: 10
+readinessProbe: 
+  tcpSocket:
+    port: 61613
+  initialDelaySeconds: 15
+  periodSeconds: 10
 
 autoscaling:
   enabled: false

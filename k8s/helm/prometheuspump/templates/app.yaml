@@ -5,5 +5,3 @@
 {{- include "shared-lib.deployment" . }}
 ---
 {{- include "shared-lib.serviceaccount" . }}
----
-{{- include "shared-lib.secret" . }}

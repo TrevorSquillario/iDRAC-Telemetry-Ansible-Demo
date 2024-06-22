@@ -54,13 +54,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:          
-          {{- range $key, $val := .Values.env }}
+            {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
-              valueFrom:
-                secretKeyRef:
-                  key:  {{ (lower $key) }}
-                  name: {{ $.Release.Name }}-env
-          {{- end }}
+              value: {{ $val | quote }}
+            {{- end }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

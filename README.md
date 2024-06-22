@@ -170,7 +170,7 @@ kubectl create deploy nginx --image nginx
 kubectl expose deploy nginx --port 80 --type LoadBalancer
 kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 
-# Nginx Ingress
+# Nginx Ingress (Not Using)
 kubectl create namespace ingress-nginx
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm install nginx-helm -n ingress-nginx ingress-nginx/ingress-nginx
@@ -201,6 +201,7 @@ kubectl get secret --namespace telemetry grafana -o jsonpath="{.data.admin-passw
 
 helm uninstall grafana --namespace telemetry
 
+helm dependency update ./activemq
 helm dependency update ./influxpump
 helm dependency update ./mlpump
 helm dependency update ./prometheuspump
@@ -211,8 +212,12 @@ helm dependency update ./simpledisc
 kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
 kubectl describe configmap telemetry-config
 helm install simpledisc simpledisc --dry-run
+
+helm install activemq activemq --namespace telemetry
 helm install simpledisc simpledisc --namespace telemetry
 
+helm uninstall activemq --namespace telemetry
+helm uninstall simpledisc --namespace telemetry
 helm uninstall prometheus --namespace telemetry
 ```
 
