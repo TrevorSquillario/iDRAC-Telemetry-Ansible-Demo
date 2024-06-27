@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    grafana_dashboard: "1"
+  name: default-dashboards
+data:
+  prometheus-all.json: |-
+{{ .Files.Get "prometheus-all.json" | indent 4 }}

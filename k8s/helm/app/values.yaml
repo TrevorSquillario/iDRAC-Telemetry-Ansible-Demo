@@ -1,0 +1,25 @@
+### Global Values ###
+global: 
+  env:
+    MESSAGEBUS_HOST: "telemetry-activemq"
+    MESSAGEBUS_PORT: "61613"
+
+### Sub Chart Values ###
+activemq: 
+  enabled: true
+grafana: 
+  enabled: true
+influxpump: 
+  enabled: false
+mlpump: 
+  enabled: false
+prometheus: 
+  enabled: true
+prometheuspump: 
+  enabled: true
+redfishread: 
+  enabled: true
+simpleauth: 
+  enabled: true
+simpledisc:
+  enabled: true

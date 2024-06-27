@@ -36,3 +36,4 @@ inventory/k8s
 # K8S
 secret.yml
 secret.yaml
+k8s/helm/**/*.tgz

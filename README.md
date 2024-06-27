@@ -147,6 +147,8 @@ docker push {NodeIP}:{NodePort}/influxdb:latest
 ```
 
 ### Helm
+#### Dependencies
+A LoadBalancer is used when deploying `grafana` and `prometheus` services
 ```
 # MetalLB 
 helm repo add metallb https://metallb.github.io/metallb
@@ -162,13 +164,24 @@ spec:
   addresses:
   - 192.168.10.0/24
 
-kubectl create -f configmap.yaml
-kubectl describe configmap config -n metallb-system
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: empty
+  namespace: metallb-system
+
+ansible-playbook -i inventory/lab k8s.yaml --tags metallb
+kubectl get IPAddressPool -n metallb-system
+kubectl get L2Advertisements -n metallb-system
 
 # Test
 kubectl create deploy nginx --image nginx
 kubectl expose deploy nginx --port 80 --type LoadBalancer
 kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+kubectl delete deploy nginx
+kubectl delete svc nginx
+
+helm uninstall metallb --namespace metallb-system
 
 # Nginx Ingress (Not Using)
 kubectl create namespace ingress-nginx
@@ -180,10 +193,29 @@ kubectl create deployment nginx --image=nginx --port=80
 kubectl expose deployment nginx
 kubectl create ingress nginx --class=nginx \
   --rule nginx.example.com/=nginx:80
+```
 
+### Telemetry Chart
+```
 # Telemetry
 kubectl create namespace telemetry
+helm dependency update ./app/
 
+kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
+kubectl describe configmap telemetry-config -n telemetry
+
+helm install telemetry app --namespace telemetry --dry-run
+helm install telemetry app --namespace telemetry
+
+kubectl get secret -n telemetry telemetry-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+kubectl get svc -n telemetry
+
+helm upgrade telemetry app --namespace telemetry --reuse-values
+helm uninstall telemetry  -n telemetry
+```
+
+### Testing
+```
 # Prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -196,29 +228,7 @@ helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm install grafana grafana/grafana --values ./grafana/values.yaml --namespace telemetry
 
-kubectl get secret --namespace telemetry grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
-
-
 helm uninstall grafana --namespace telemetry
-
-helm dependency update ./activemq
-helm dependency update ./influxpump
-helm dependency update ./mlpump
-helm dependency update ./prometheuspump
-helm dependency update ./redfishread
-helm dependency update ./simpleauth
-helm dependency update ./simpledisc
-
-kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
-kubectl describe configmap telemetry-config
-helm install simpledisc simpledisc --dry-run
-
-helm install activemq activemq --namespace telemetry
-helm install simpledisc simpledisc --namespace telemetry
-
-helm uninstall activemq --namespace telemetry
-helm uninstall simpledisc --namespace telemetry
-helm uninstall prometheus --namespace telemetry
 ```
 
 ## CI/CD

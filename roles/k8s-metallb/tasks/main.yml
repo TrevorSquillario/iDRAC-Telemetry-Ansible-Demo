@@ -13,13 +13,24 @@
 #  register: res
 #  changed_when: res.rc != 0
 
-- name: Copy config file
+- name: Generate IPAddressPool config
   ansible.builtin.template:
     src: config.yml.j2
     dest: /tmp/config.yml
     mode: "0755"
 
-- name: Configure
+- name: Apply IPAddressPool
   ansible.builtin.shell: kubectl apply -f /tmp/config.yml
+  register: res
+  changed_when: res.rc != 0
+
+- name: Generate L2Advertisement config
+  ansible.builtin.template:
+    src: l2advertisement.yml.j2
+    dest: /tmp/l2advertisement.yml
+    mode: "0755"
+
+- name: Apply L2Advertisement
+  ansible.builtin.shell: kubectl apply -f /tmp/l2advertisement.yml
   register: res
   changed_when: res.rc != 0

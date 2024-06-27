@@ -1,0 +1,30 @@
+dependencies:
+- name: activemq
+  repository: ""
+  version: 0.1.0
+- name: grafana
+  repository: https://grafana.github.io/helm-charts
+  version: 8.1.1
+- name: influxpump
+  repository: ""
+  version: 0.1.0
+- name: mlpump
+  repository: ""
+  version: 0.1.0
+- name: prometheus
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 25.22.0
+- name: prometheuspump
+  repository: ""
+  version: 0.1.0
+- name: redfishread
+  repository: ""
+  version: 0.1.0
+- name: simpleauth
+  repository: ""
+  version: 0.1.0
+- name: simpledisc
+  repository: ""
+  version: 0.1.0
+digest: sha256:a89542ffaae417c2435ca7dd9c30ad75634607c712a1e11d784920c0c2b21aef
+generated: "2024-06-27T12:01:15.630252046-06:00"
