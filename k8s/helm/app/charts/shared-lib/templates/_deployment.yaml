@@ -55,8 +55,13 @@ spec:
           {{- end }}
           env:    
             {{- range $key, $val := .Values.global.env }}
+            {{- if eq $key "MESSAGEBUS_HOST" }}
+            - name: {{ $key }}
+              value: "{{ $.Release.Name }}-{{ $val }}"
+            {{- else }}
             - name: {{ $key }}
               value: {{ $val | quote }}
+            {{- end }}
             {{- end }}      
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}

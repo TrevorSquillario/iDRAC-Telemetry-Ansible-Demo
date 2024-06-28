@@ -1,7 +1,7 @@
 ### Global Values ###
 global: 
   env:
-    MESSAGEBUS_HOST: "telemetry-activemq"
+    MESSAGEBUS_HOST: "activemq"
     MESSAGEBUS_PORT: "61613"
 
 ### Sub Chart Values ###
