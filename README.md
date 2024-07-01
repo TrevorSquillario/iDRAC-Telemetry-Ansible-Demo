@@ -201,10 +201,10 @@ kubectl create ingress nginx --class=nginx \
 kubectl create namespace telemetry
 helm dependency update ./app/
 
-kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
+kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.yaml
 kubectl describe configmap telemetry-config -n telemetry
 
-helm install telemetry app --namespace telemetry --dry-run
+helm install telemetry app --namespace telemetry --set simpleauth.env.USERNAME="root" --set simpleauth.env.PASSWORD="calvin" --dry-run
 helm install telemetry app --namespace telemetry
 
 kubectl get secret -n telemetry telemetry-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo

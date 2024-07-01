@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/trevorsquillario/simpledisc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -94,9 +94,12 @@ autoscaling:
 
 # Additional volumes on the output Deployment definition.
 volumes: 
-  - name: "telemetry-config"
+  - name: telemetry-config
     configMap:
-      name: "telemetry-config"
+      name: telemetry-config
+      items:
+        - key: config.yaml
+          path: config.yaml
 # - name: foo
 #   secret:
 #     secretName: mysecret
@@ -104,9 +107,8 @@ volumes:
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts: 
-  - name: "telemetry-config" # kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
-    mountPath: "/app/config.ini"
-    subPath: "config.ini"
+  - name: telemetry-config # kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
+    mountPath: "/app"
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
