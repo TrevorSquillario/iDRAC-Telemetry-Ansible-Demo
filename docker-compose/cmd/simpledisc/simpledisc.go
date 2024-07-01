@@ -3,16 +3,15 @@
 package main
 
 import (
-	"flag"
-	"gopkg.in/ini.v1"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dell/iDRAC-Telemetry-Reference-Tools/internal/disc"
 	"github.com/dell/iDRAC-Telemetry-Reference-Tools/internal/messagebus/stomp"
+
+	"gopkg.in/yaml.v3"
 )
 
 var configStrings = map[string]string{
@@ -35,36 +34,20 @@ func getEnvSettings() {
 
 func main() {
 
-	configName := flag.String("config", "config.ini", "The configuration ini file")
+	var ServiceConfig disc.ServiceConfig
+	yamlData, err := os.ReadFile("config.yaml")
 
-	flag.Parse()
-
-	config, err := ini.Load(*configName)
 	if err != nil {
-		log.Fatalf("Fail to read file: %v", err)
+		log.Fatal("Fail to read file: %v", err)
 	}
+
+	yaml.Unmarshal(yamlData, &ServiceConfig)
+	log.Println("Loaded Server Config")
 
 	//Gather configuration from environment variables
 	getEnvSettings()
 
-	types := config.Section("Services").Key("Types").Strings(",")
-	ips := config.Section("Services").Key("IPs").Strings(",")
-
-	for index, element := range types {
-		s := new(disc.Service)
-		if strings.EqualFold(element, "MSM") {
-			s.ServiceType = disc.MSM
-		} else if strings.EqualFold(element, "EC") {
-			s.ServiceType = disc.EC
-		} else if strings.EqualFold(element, "iDRAC") {
-			s.ServiceType = disc.IDRAC
-		} else {
-			s.ServiceType = disc.UNKNOWN
-		}
-		s.Ip = ips[index]
-		services = append(services, *s)
-	}
-	log.Print("Services: ", services)
+	log.Printf("Services: %+v", ServiceConfig)
 
 	discoveryService := new(disc.DiscoveryService)
 	for {
@@ -83,7 +66,7 @@ func main() {
 
 	log.Print("Discovery Service is initialized")
 
-	for _, element := range services {
+	for _, element := range ServiceConfig.Services {
 		go func(elem disc.Service) {
 			err := discoveryService.SendService(elem)
 			if err != nil {
@@ -98,7 +81,7 @@ func main() {
 		log.Printf("in simpledisc Received command: %s", command.Command)
 		switch command.Command {
 		case disc.RESEND:
-			for _, element := range services {
+			for _, element := range ServiceConfig.Services {
 				go func(elem disc.Service) {
 					err := discoveryService.SendService(elem)
 					if err != nil {

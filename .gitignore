@@ -27,7 +27,7 @@ __pycache__
 vault.yaml
 inventory/lab
 docker-compose/.env
-docker-compose/config.ini
+docker-compose/config.*
 docker-compose/docker-compose.yaml
 *.keras
 docker-compose/k8s

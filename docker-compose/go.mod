@@ -16,6 +16,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/ini.v1 v1.51.0
+	gopkg.in/yaml.v3 v3.0.1
 	pack.ag/amqp v0.12.3
 )
 

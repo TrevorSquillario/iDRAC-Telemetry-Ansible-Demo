@@ -24,11 +24,11 @@ const (
 )
 
 type Service struct {
-	ServiceType int               `json:"serviceType"`
+	ServiceType string            `json:"serviceType"`
 	Ip          string            `json:"ip"`
 	AuthType    int               `json:"authType"`
 	Auth        map[string]string `json:"auth"`
-	HostTags    string 			  `json:"hostTag"`
+	HostTags    []string 		  `json:"hostTag"`
 }
 
 const (

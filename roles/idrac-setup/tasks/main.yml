@@ -1,21 +1,21 @@
 ---
 # tasks file for idrac-setup
 ###
-# Generate config.ini
+# Generate config.yaml
 ###
 - debug:
     var: play_hosts
   tags:
-    - ini
+    - yaml
     - debug
   run_once: true
 
-- name: Write config.ini file for iDRAC Telemetry Reference Tools
+- name: Write config.yaml file for iDRAC Telemetry Reference Tools
   template: 
-    dest: "{{ playbook_dir }}/docker-compose/config.ini"
-    src: config.ini.j2
+    dest: "{{ playbook_dir }}/docker-compose/config.yaml"
+    src: config.yaml.j2
   tags:
-    - ini
+    - yaml
   run_once: true
 
 ### 

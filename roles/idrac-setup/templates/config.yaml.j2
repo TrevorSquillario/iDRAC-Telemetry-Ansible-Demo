@@ -1,0 +1,9 @@
+services:
+{% for host in vars['play_hosts'] %}
+- ip: {{ hostvars[host]['oob_host'] }}
+  serviceType: iDRAC
+  hostTags:
+{% for tag in hostvars[host]['group_names'] %}
+    - {{ tag }}
+{% endfor %} 
+{% endfor %} 

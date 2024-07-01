@@ -346,8 +346,9 @@ services:
       args:
         <<: *base-args
         CMD: simpleauth
-    volumes:
-      - ./config.ini:/app/config.ini
+    environment:
+      USERNAME: "{{ vault_oob_username }}"
+      PASSWORD: "{{ vault_oob_password }}"
 
   simpledisc:
     <<: *refdaemon
@@ -359,4 +360,4 @@ services:
         <<: *base-args
         CMD: simpledisc
     volumes:
-      - ./config.ini:/app/config.ini
+      - ./config.yaml:/app/config.yaml

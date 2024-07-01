@@ -4,7 +4,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"log"
 	"os"
 	"strconv"
@@ -12,7 +11,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ssh"
-	"gopkg.in/ini.v1"
 
 	"github.com/dell/iDRAC-Telemetry-Reference-Tools/internal/auth"
 	"github.com/dell/iDRAC-Telemetry-Reference-Tools/internal/disc"
@@ -27,24 +25,18 @@ var configStrings = map[string]string{
 
 var authServices map[string]auth.Service
 
-func handleDiscServiceChannel(serviceIn chan *disc.Service, config *ini.File, authorizationService *auth.AuthorizationService) {
+func handleDiscServiceChannel(serviceIn chan *disc.Service, username string, password string, authorizationService *auth.AuthorizationService) {
 	for {
 		service := <-serviceIn
-		//log.Print("Service = ", service)
-		devconfig, err := config.GetSection(service.Ip)
-		if err != nil {
-			log.Print(err)
-			continue
-		}
 		authService := new(auth.Service)
 		authService.ServiceType = service.ServiceType
 		authService.Ip = service.Ip
-		authService.HostTags = devconfig.Key("host-tags").MustString("")
+		authService.HostTags = service.HostTags
 		if authService.ServiceType == auth.EC {
 			sshconfig := &ssh.ClientConfig{
-				User: devconfig.Key("username").MustString(""),
+				User: username,
 				Auth: []ssh.AuthMethod{
-					ssh.Password(devconfig.Key("password").MustString("")),
+					ssh.Password(password),
 				},
 				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
@@ -94,14 +86,13 @@ func handleDiscServiceChannel(serviceIn chan *disc.Service, config *ini.File, au
 			authService.Auth = make(map[string]string)
 			authService.Auth["token"] = strings.TrimSpace(parts[1])
 		} else {
-			key, err := devconfig.GetKey("username")
-			if err != nil {
+			if username == "" {
 				//TODO get token
 			} else {
 				authService.AuthType = auth.AuthTypeUsernamePassword
 				authService.Auth = make(map[string]string)
-				authService.Auth["username"] = key.String()
-				authService.Auth["password"] = devconfig.Key("password").MustString("")
+				authService.Auth["username"] = username
+				authService.Auth["password"] = password
 			}
 		}
 		//log.Print("Got Service = ", *authService)
@@ -122,18 +113,17 @@ func getEnvSettings() {
 	if len(mbPort) > 0 {
 		configStrings["mbport"] = mbPort
 	}
+	username := os.Getenv("USERNAME")
+	if len(username) > 0 {
+		configStrings["username"] = username
+	}
+	password := os.Getenv("PASSWORD")
+	if len(password) > 0 {
+		configStrings["password"] = password
+	}
 }
 
 func main() {
-	configName := flag.String("config", "config.ini", "The configuration ini file")
-
-	flag.Parse()
-
-	config, err := ini.Load(*configName)
-	if err != nil {
-		log.Fatalf("Fail to read file: %v", err)
-	}
-
 	//Gather configuration from environment variables
 	getEnvSettings()
 
@@ -160,7 +150,7 @@ func main() {
 
 	discoveryClient.ResendAll()
 	go discoveryClient.GetService(serviceIn)
-	go handleDiscServiceChannel(serviceIn, config, authorizationService)
+	go handleDiscServiceChannel(serviceIn, configStrings["username"], configStrings["password"], authorizationService)
 	go authorizationService.ReceiveCommand(commands) //nolint: errcheck
 	for {
 		command := <-commands

@@ -10,16 +10,20 @@ import (
 )
 
 const (
-	UNKNOWN = 0
-	MSM     = 1
-	EC      = 2
-	IDRAC   = 3
+	UNKNOWN = "UNKNOWN"
+	MSM     = "MSM"
+	EC      = "EC"
+	IDRAC   = "iDRAC"
 )
 
 type Service struct {
-	ServiceType int    `json:"serviceType"`
-	Ip          string `json:"ip"`
-	HostTags    string `json:"hostTag"`
+	ServiceType string `yaml:"serviceType"`
+	Ip          string `yaml:"ip"`
+	HostTags    []string `yaml:"hostTags"`
+}
+
+type ServiceConfig struct {
+	Services []Service `yaml:"services"`
 }
 
 const (
