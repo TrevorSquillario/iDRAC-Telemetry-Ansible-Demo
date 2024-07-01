@@ -530,7 +530,7 @@ func handleAuthServiceChannel(serviceIn chan *auth.Service, dataBusService *data
 		} else {
 			device.State = databus.STARTING
 		}
-		device.HostTags = service.HostTags
+		device.HostTags = strings.Join(service.HostTags[:], ",")
 		device.Redfish = r
 		device.HasChildren = service.ServiceType == auth.MSM
 		ctx, cancel := context.WithCancel(context.Background())
