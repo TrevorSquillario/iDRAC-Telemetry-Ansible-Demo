@@ -70,11 +70,12 @@ spec:
               value: {{ $val | quote }}
             {{- end }}
             # Secrets
+            {{ $name := print .Release.Name "-" .Chart.Name "-secrets" }}
             {{- range $key, $val := .Values.envSecrets }}
             - name: {{ $key }}
               valueFrom:
                 secretKeyRef:
-                  name: "{{ $.Release.Name }}-{{ lower $key }}"
+                  name: {{ $name }}
                   key: {{ $key }}
             {{- end }}
       {{- with .Values.volumes }}

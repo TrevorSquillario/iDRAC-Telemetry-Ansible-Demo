@@ -55,6 +55,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ matrix.image }}
+          tags: |
+            type=semver,pattern={{version}}
 
       - name: Build and push Docker image 
         uses: docker/build-push-action@v6
