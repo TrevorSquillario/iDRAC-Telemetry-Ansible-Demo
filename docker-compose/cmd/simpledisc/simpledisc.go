@@ -35,7 +35,7 @@ func getEnvSettings() {
 func main() {
 
 	var ServiceConfig disc.ServiceConfig
-	yamlData, err := os.ReadFile("config.yaml")
+	yamlData, err := os.ReadFile("config/config.yaml")
 
 	if err != nil {
 		log.Fatal("Fail to read file: %v", err)
