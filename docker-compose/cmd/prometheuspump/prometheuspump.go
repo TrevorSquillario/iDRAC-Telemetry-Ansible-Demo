@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"golang.org/x/exp/maps"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -46,8 +47,22 @@ func getValidMetricName(name string) string {
 	return new_name
 }
 
-func doFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTags string, hostName string) {
+func getTags(hostTags map[string]string, system string, context string, hostname string) map[string]string {
+	defaultTags := map[string]string{
+		"ServiceTag": system,
+		"FQDD": context,
+		"HostName": hostname,
+	}
+	for key, value := range hostTags {
+		defaultTags[key] = value
+	}
+	log.Printf("DEBUG: getTags value %#v\n", defaultTags)
+	return defaultTags
+}
+
+func doFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTags map[string]string, hostName string) {
 	log.Printf("DEBUG: doFQDDGuage value %#v\n", value)
+	tags := getTags(hostTags, value.System, value.Context, hostName)
 	if collectors["FQDD"] == nil {
 		collectors["FQDD"] = make(map[string]*prometheus.GaugeVec)
 	}
@@ -58,12 +73,7 @@ func doFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTag
 				Subsystem: getValidMetricName(value.Context),
 				Name:      value.ID,
 			},
-			[]string{
-				"ServiceTag",
-				"FQDD",
-				"HostTags",
-				"HostName",
-			})
+			maps.Keys(tags))
 		registry.MustRegister(guage)
 		floatVal, err := strconv.ParseFloat(value.Value, 64)
 		if err != nil {
@@ -71,7 +81,7 @@ func doFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTag
 				floatVal = 1
 			}
 		}
-		guage.WithLabelValues(value.System, value.Context, hostTags, hostName).Set(floatVal)
+		guage.WithLabelValues(maps.Values(tags)...).Set(floatVal)
 		collectors["FQDD"][value.ID] = guage
 	} else {
 		guage := collectors["FQDD"][value.ID]
@@ -81,13 +91,14 @@ func doFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTag
 				floatVal = 1
 			}
 		}
-		guage.WithLabelValues(value.System, value.Context, hostTags, hostName).Set(floatVal)
+		guage.WithLabelValues(maps.Values(tags)...).Set(floatVal)
 	}
 }
 
-func doNonFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTags string, hostName string) {
+func doNonFQDDGuage(value databus.DataValue, registry *prometheus.Registry, hostTags map[string]string, hostName string) {
 	log.Printf("DEBUG: doNonFQDDGuage value %#v\n", value)
 	value.Context = strings.Replace(value.Context, " ", "", -1)
+	tags := getTags(hostTags, value.System, value.Context, hostName)
 	if collectors[value.Context] == nil {
 		collectors[value.Context] = make(map[string]*prometheus.GaugeVec)
 	}
@@ -98,20 +109,15 @@ func doNonFQDDGuage(value databus.DataValue, registry *prometheus.Registry, host
 				Subsystem: value.Context,
 				Name:      value.ID,
 			},
-			[]string{
-				"ServiceTag",
-				"FQDD",
-				"HostTags",
-				"HostName",
-			})
+			maps.Keys(tags))
 		registry.MustRegister(guage)
 		floatVal, _ := strconv.ParseFloat(value.Value, 64)
-		guage.WithLabelValues(value.System, value.Context, hostTags, hostName).Set(floatVal)
+		guage.WithLabelValues(maps.Values(tags)...).Set(floatVal)
 		collectors[value.Context][value.ID] = guage
 	} else {
 		guage := collectors[value.Context][value.ID]
 		floatVal, _ := strconv.ParseFloat(value.Value, 64)
-		guage.WithLabelValues(value.System, value.Context, hostTags, hostName).Set(floatVal)
+		guage.WithLabelValues(maps.Values(tags)...).Set(floatVal)
 	}
 }
 

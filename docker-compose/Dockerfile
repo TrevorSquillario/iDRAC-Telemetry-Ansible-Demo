@@ -1,5 +1,5 @@
 #FROM scratch
-FROM golang:1.17 as builder
+FROM golang:1.21 as builder
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000

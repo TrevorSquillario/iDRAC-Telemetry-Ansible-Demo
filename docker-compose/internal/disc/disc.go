@@ -19,7 +19,7 @@ const (
 type Service struct {
 	ServiceType string `yaml:"serviceType"`
 	Ip          string `yaml:"ip"`
-	HostTags    []string `yaml:"hostTags"`
+	HostTags    map[string]string `yaml:"hostTags"`
 }
 
 type ServiceConfig struct {

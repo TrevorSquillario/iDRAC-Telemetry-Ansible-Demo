@@ -36,7 +36,7 @@ type RedfishDevice struct {
 	LastEvent    time.Time
 	CtxCancel    context.CancelFunc
 	Ctx          context.Context
-	HostTags     string
+	HostTags     map[string]string
 }
 
 var devices map[string]*RedfishDevice
@@ -89,7 +89,7 @@ func getValueIdContextAndLabel(value *redfish.RedfishPayload, i int) (string, st
 
 // Responsible for taking the report received from SSE, getting its component parts, and then sending it along the
 // data bus
-func parseAlert(alertEvents *redfish.RedfishPayload, systemid string, hosttags string, hostname string, dataBusService *databus.DataBusService) {
+func parseAlert(alertEvents *redfish.RedfishPayload, systemid string, hosttags map[string]string, hostname string, dataBusService *databus.DataBusService) {
 	alertValues, err := alertEvents.GetPropertyByName("Events")
 	if err != nil {
 		log.Printf("%s: Unable to get alert events: %v %v", systemid, err, alertEvents)
@@ -145,7 +145,7 @@ func parseAlert(alertEvents *redfish.RedfishPayload, systemid string, hosttags s
 
 // Responsible for taking the report received from SSE, getting its component parts, and then sending it along the
 // data bus
-func parseReport(metricReport *redfish.RedfishPayload, systemid string, hosttags string, hostname string, dataBusService *databus.DataBusService) {
+func parseReport(metricReport *redfish.RedfishPayload, systemid string, hosttags map[string]string, hostname string, dataBusService *databus.DataBusService) {
 	metricValues, err := metricReport.GetPropertyByName("MetricValues")
 	if err != nil {
 		log.Printf("%s: Unable to get metric report's MetricValues: %v %v", systemid, err, metricReport)
@@ -530,7 +530,7 @@ func handleAuthServiceChannel(serviceIn chan *auth.Service, dataBusService *data
 		} else {
 			device.State = databus.STARTING
 		}
-		device.HostTags = strings.Join(service.HostTags[:], ",")
+		device.HostTags = service.HostTags
 		device.Redfish = r
 		device.HasChildren = service.ServiceType == auth.MSM
 		ctx, cancel := context.WithCancel(context.Background())

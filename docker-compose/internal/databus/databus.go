@@ -44,7 +44,7 @@ type DataGroup struct {
 	Label    string
 	Sequence string
 	Values   []DataValue
-	HostTags string
+	HostTags map[string]string
 	HostName string
 }
 

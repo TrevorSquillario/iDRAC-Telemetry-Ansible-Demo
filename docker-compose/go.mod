@@ -1,6 +1,6 @@
 module github.com/dell/iDRAC-Telemetry-Reference-Tools
 
-go 1.17
+go 1.21
 
 require (
 	github.com/cenkalti/backoff/v4 v4.1.0
@@ -16,7 +16,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/ini.v1 v1.51.0
-	gopkg.in/yaml.v3 v3.0.1
 	pack.ag/amqp v0.12.3
 )
 
@@ -65,4 +64,6 @@ require (
 require (
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

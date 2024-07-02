@@ -107,7 +107,7 @@ volumes:
 
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts: 
-  - name: telemetry-config # kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.ini
+  - name: telemetry-config # kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.yaml
     mountPath: "/app/config"
 # - name: foo
 #   mountPath: "/etc/foo"

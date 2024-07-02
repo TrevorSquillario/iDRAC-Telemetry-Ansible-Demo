@@ -28,7 +28,7 @@ type Service struct {
 	Ip          string            `json:"ip"`
 	AuthType    int               `json:"authType"`
 	Auth        map[string]string `json:"auth"`
-	HostTags    []string 		  `json:"hostTag"`
+	HostTags    map[string]string `json:"hostTag"`
 }
 
 const (
