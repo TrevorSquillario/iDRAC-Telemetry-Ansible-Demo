@@ -2,6 +2,10 @@
 ---
 {{- include "shared-lib.service" . }}
 ---
+{{ if .Values.envSecrets }}
+{{- include "shared-lib.secret" . }}
+{{ end }}
+---
 {{- include "shared-lib.deployment" . }}
 ---
 {{- include "shared-lib.serviceaccount" . }}

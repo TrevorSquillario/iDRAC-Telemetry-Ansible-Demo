@@ -53,7 +53,8 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          env:    
+          env:
+            # Global Values
             {{- range $key, $val := .Values.global.env }}
             {{- if eq $key "MESSAGEBUS_HOST" }}
             - name: {{ $key }}
@@ -62,10 +63,19 @@ spec:
             - name: {{ $key }}
               value: {{ $val | quote }}
             {{- end }}
-            {{- end }}      
+            {{- end }}
+            # Chart Local Values
             {{- range $key, $val := .Values.env }}
             - name: {{ $key }}
               value: {{ $val | quote }}
+            {{- end }}
+            # Secrets
+            {{- range $key, $val := .Values.envSecrets }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ $.Release.Name }}-{{ lower $key }}"
+                  key: {{ $key }}
             {{- end }}
       {{- with .Values.volumes }}
       volumes:
