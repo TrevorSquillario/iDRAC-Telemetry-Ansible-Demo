@@ -1,0 +1,152 @@
+apiKey: ""
+
+envWithTpl:
+  - name: APIKEY
+    value: "{{ .Values.apiKey }}"
+
+podAnnotations:
+  fluentbit.io/exclude: 'true'
+
+metricsPort: 2020
+
+image:
+  repository: ghcr.io/fluent/fluent-bit
+  tag: latest-debug
+
+extraPorts:
+  - port: 5170
+    containerPort: 5170
+    protocol: TCP
+    name: talos
+
+config:
+  service: |
+    [SERVICE]
+      Flush         5
+      Daemon        Off
+      Log_Level     debug
+      Parsers_File  custom_parsers.conf   
+      HTTP_Server   On
+      HTTP_Listen   0.0.0.0
+      HTTP_Port     {{ .Values.metricsPort }}
+      Health_Check  On 
+
+  inputs: |
+    [INPUT]
+      Name          tcp
+      Listen        0.0.0.0
+      Port          5170
+      Format        json
+      Tag           talos.*
+
+    [INPUT]
+      Name          tail
+      Alias         kubernetes
+      Path          /var/log/containers/*.log
+      Parser        containerd
+      Tag           kubernetes.*
+
+    [INPUT]
+      Name          tail
+      Alias         audit
+      Path          /var/log/audit/kube/*.log
+      Parser        audit
+      Tag           audit.*    
+
+  filters: |
+    [FILTER]
+      Name                kubernetes
+      Alias               kubernetes
+      Match               kubernetes.*
+      Kube_Tag_Prefix     kubernetes.var.log.containers.
+      Use_Kubelet         Off
+      Merge_Log           On
+      Merge_Log_Trim      On
+      Keep_Log            Off
+      K8S-Logging.Parser  On
+      K8S-Logging.Exclude On
+      Annotations         Off
+      Labels              On
+
+    [FILTER]
+      Name          modify
+      Match         kubernetes.*
+      Add           source kubernetes
+      Remove        logtag    
+
+  customParsers: |
+    [PARSER]
+      Name          audit
+      Format        json
+      Time_Key      requestReceivedTimestamp
+      Time_Format   %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+      Name          oteldemo
+      Format        json
+      Time_Key      timestamp
+      Time_Format   %Y-%m-%dT%H:%M:%S.%L%z
+
+    [PARSER]
+      Name          containerd
+      Format        regex
+      Regex         ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+      Time_Key      time
+      Time_Format   %Y-%m-%dT%H:%M:%S.%L%z    
+
+    [PARSER]
+      Name          openebs
+      Format        regex
+      Regex         ^(?<container_logseverity>\D+)(?<container_logeventid>\d+) (?<container_logtimestamp>[^ ]*)\s+(?<container_logcount>[^ ]*) (?<container_loglib>[^ ]*) (?<container_log>.*)$
+
+  outputs: |
+    [OUTPUT]
+      Name    stdout
+      Alias   stdout
+      Match   *
+      Format  json_lines   
+
+    [OUTPUT]
+      Name          http
+      Match         kubernetes.*
+      Host          api.moogsoft.ai
+      Port          443
+      header        apiKey ${APIKEY}
+      URI           /express/v1/integrations/custom/66fdd430c4b5c65fa0da6ac4
+      Format        json_lines
+      tls           On
+
+  # [OUTPUT]
+  #   name prometheus_remote_write
+  #   host https://api.moogsoft.ai/v1/integrations/metrics/prometheus-remote-write
+  #   port 443    
+  #   match *
+  #   header apiKey ${APIKEY}
+  #   tls on
+  #   tls.verify on
+  #   log_response_payload true
+
+   # ${APIKEY}
+
+  # If you wish to ship directly to Loki from Fluentbit,
+  # Uncomment the following output, updating the Host with your Loki DNS/IP info as necessary.
+  # [OUTPUT]
+  # Name loki
+  # Match *
+  # Host loki.loki.svc
+  # Port 3100
+  # Labels job=fluentbit
+  # Auto_Kubernetes_Labels on
+
+daemonSetVolumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+
+daemonSetVolumeMounts:
+  - name: varlog
+    mountPath: /var/log
+
+tolerations:
+  - operator: Exists
+    effect: NoSchedule

@@ -37,3 +37,5 @@ inventory/k8s
 secret.yml
 secret.yaml
 k8s/helm/**/*.tgz
+k8s/talos/kubeconfig
+k8s/talos/talosconfig

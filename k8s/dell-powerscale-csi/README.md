@@ -38,7 +38,7 @@ curl --user "admin:password" --request GET --header "Content-Type:application/js
 
 git clone -b v2.10.1 https://github.com/dell/csi-powerscale.git
 cd ../csi-powerscale/dell-csi-helm-installer
-wget -O my-isilon-settings.yaml https://raw.githubusercontent.com/dell/helm-charts/csi-isilon-2.10.1/charts/csi-isilon/values.yaml
+wget -O my-isilon-settings.yaml https://raw.githubusercontent.com/dell/helm-charts/csi-isilon-2.11.0/charts/csi-isilon/values.yaml
 vi my-isilon-settings.yaml
 
 ./csi-install.sh --namespace isilon --values my-isilon-settings.yaml
@@ -47,9 +47,9 @@ vi my-isilon-settings.yaml
 # Test
 ```
 kubectl create -f test-pod-pvc.yaml -n isilon
-kubectl get pvc
+kubectl get pvc -A
 kubectl create -f test-pod.yaml -n isilon
-kubectl get pv
+kubectl get pv -A
 kubectl describe pod test-pv-pod -n isilon
 
 kubectl delete pod test-pv-pod -n isilon

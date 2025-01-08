@@ -3,6 +3,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+apiKey: "abc123"
+
 rbac:
   create: true
 
@@ -249,6 +251,9 @@ server:
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ##
   remoteWrite: []
+    #- url: "https://api.moogsoft.ai/v1/integrations/metrics/prometheus-remote-write"
+    #  headers:
+    #    apiKey: 0f1fb625-212f-4477-b38b-a1cb448a65a3
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
   ##
   remoteRead: []
@@ -478,7 +483,7 @@ server:
     ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
     ##   GKE, AWS & OpenStack)
     ##
-    storageClass: "isilon"
+    storageClass: "openebs-hostpath"
 
     ## Prometheus server data Persistent Volume Binding Mode
     ## If defined, volumeBindingMode: <volumeBindingMode>
@@ -1246,7 +1251,7 @@ alertmanager:
     enabled: true
     accessModes:
     - ReadWriteOnce
-    storageClass: "isilon"
+    storageClass: "openebs-hostpath"
     #statefulSet:
     #  enabled: true
 

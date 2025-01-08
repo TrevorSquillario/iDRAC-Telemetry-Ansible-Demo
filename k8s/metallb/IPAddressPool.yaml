@@ -1,0 +1,10 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: cheap
+  namespace: metallb-system
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  addresses:
+  - 100.77.18.120-100.77.18.130

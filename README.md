@@ -153,22 +153,22 @@ A LoadBalancer is used when deploying `grafana` and `prometheus` services
 # MetalLB 
 helm repo add metallb https://metallb.github.io/metallb
 helm repo update
+
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+EOF
+
 helm install metallb metallb/metallb --namespace metallb-system
 
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: cheap
-  namespace: metallb-system
-spec:
-  addresses:
-  - 192.168.10.0/24
-
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: empty
-  namespace: metallb-system
+kubectl apply -f metallb/IPAddressPool.yaml -n metallb-system
+kubectl apply -f metallb/L2Advertisement.yaml -n metallb-system
 
 ansible-playbook -i inventory/lab k8s.yaml --tags metallb
 kubectl get IPAddressPool -n metallb-system
@@ -198,7 +198,17 @@ kubectl create ingress nginx --class=nginx \
 ### Telemetry Chart
 ```
 # Telemetry
-kubectl create namespace telemetry
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: telemetry
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+EOF
+
 helm dependency update ./app/
 
 kubectl create configmap telemetry-config -n telemetry --from-file=../../docker-compose/config.yaml
@@ -210,7 +220,8 @@ helm install telemetry app --namespace telemetry --set simpleauth.envSecrets.USE
 kubectl get secret -n telemetry telemetry-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 kubectl get svc -n telemetry
 
-helm upgrade telemetry app --namespace telemetry --reuse-values
+helm upgrade telemetry app --namespace telemetry --reuse-values 
+helm upgrade telemetry app --namespace telemetry --set simpleauth.envSecrets.USERNAME="root" --set simpleauth.envSecrets.PASSWORD="calvin" --set prometheus.apiKey=""
 helm uninstall telemetry  -n telemetry
 ```
 

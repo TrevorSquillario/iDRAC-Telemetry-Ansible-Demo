@@ -1,0 +1,17 @@
+- op: replace
+  path: /machine/disks
+  value:
+    - device: /dev/sdb
+      partitions:
+        - mountpoint: /var/mnt/storage
+
+- op: replace
+  path: /machine/kubelet/extraMounts
+  value:
+    - destination: /var/openebs/local
+      type: bind
+      source: /var/mnt/storage
+      options:
+        - bind
+        - rshared
+        - rw

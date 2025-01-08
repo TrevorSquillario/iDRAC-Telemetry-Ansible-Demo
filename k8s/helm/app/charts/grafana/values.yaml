@@ -370,7 +370,7 @@ extraContainerVolumes: []
 persistence:
   type: pvc
   enabled: true
-  storageClassName: isilon
+  storageClassName: openebs-hostpath
   accessModes:
     - ReadWriteOnce
   size: 10Gi

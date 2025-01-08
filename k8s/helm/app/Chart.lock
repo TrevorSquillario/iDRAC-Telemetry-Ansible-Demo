@@ -13,7 +13,7 @@ dependencies:
   version: 0.1.0
 - name: prometheus
   repository: https://prometheus-community.github.io/helm-charts
-  version: 25.22.0
+  version: 25.22.1
 - name: prometheuspump
   repository: ""
   version: 0.1.0
@@ -26,5 +26,5 @@ dependencies:
 - name: simpledisc
   repository: ""
   version: 0.1.0
-digest: sha256:a89542ffaae417c2435ca7dd9c30ad75634607c712a1e11d784920c0c2b21aef
-generated: "2024-06-27T12:01:15.630252046-06:00"
+digest: sha256:1412cf223044f4215b4ed6dcf621faef3780fda9691cfdebdb20ede0d49ce2a5
+generated: "2024-10-03T10:05:07.269738469-06:00"
